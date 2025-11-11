@@ -1,38 +1,38 @@
 ## Environment Table of Contents
 
 - [Starcraft II](#starcraft-ii)
-    - [What is StarCraft II](#what-is-starcraft-ii)
-    - [Versions](#versions)
-    - [Game and Action Speed](#game-and-action-speed)
-        - [Game speed](#game-speed)
-        - [APM Calculation](#apm-calculation)
-        - [APM and fairness](#apm-and-fairness)
-    - [Determinism and Randomness](#determinism-and-randomness)
+  - [What is StarCraft II](#what-is-starcraft-ii)
+  - [Versions](#versions)
+  - [Game and Action Speed](#game-and-action-speed)
+    - [Game speed](#game-speed)
+    - [APM Calculation](#apm-calculation)
+    - [APM and fairness](#apm-and-fairness)
+  - [Determinism and Randomness](#determinism-and-randomness)
 - [Actions and Observations](#actions-and-observations)
-    - [Observation](#observation)
-        - [Spatial/Visual](#spatialvisual)
-            - [RGB Pixels](#rgb-pixels)
-            - [Feature layers](#feature-layers)
-            - [Minimap](#minimap)
-            - [Screen](#screen)
-        - [Structured](#structured)
-            - [General player information](#general-player-information)
-            - [Control groups](#control-groups)
-            - [Single Select](#single-select)
-            - [Multi Select](#multi-select)
-            - [Cargo](#cargo)
-            - [BuildQueue](#build-queue)
-            - [AvailableActions](#available-actions)
-            - [LastActions](#last-actions)
-            - [ActionsResult](#action-result)
-            - [Alerts](#alerts)
-    - [Actions](#actions)
-        - [List of actions](#list-of-actions)
-        - [Action categories](#action-categories)
-        - [General vs Specific actions](#general-vs-specific-actions)
-        - [Example usage](#example-usage)
+  - [Observation](#observation)
+    - [Spatial/Visual](#spatialvisual)
+      - [RGB Pixels](#rgb-pixels)
+      - [Feature layers](#feature-layers)
+      - [Minimap](#minimap)
+      - [Screen](#screen)
+    - [Structured](#structured)
+      - [General player information](#general-player-information)
+      - [Control groups](#control-groups)
+      - [Single Select](#single-select)
+      - [Multi Select](#multi-select)
+      - [Cargo](#cargo)
+      - [BuildQueue](#build-queue)
+      - [AvailableActions](#available-actions)
+      - [LastActions](#last-actions)
+      - [ActionsResult](#action-result)
+      - [Alerts](#alerts)
+  - [Actions](#actions)
+    - [List of actions](#list-of-actions)
+    - [Action categories](#action-categories)
+    - [General vs Specific actions](#general-vs-specific-actions)
+    - [Example usage](#example-usage)
 - [RL Environment](#rl-environment)
-    - [Environment wrappers](#environment-wrappers)
+  - [Environment wrappers](#environment-wrappers)
 - [Agents](#agents)
 
 <!-- /TOC -->
@@ -42,10 +42,8 @@
 ### What is StarCraft II
 
 [StarCraft II](https://en.wikipedia.org/wiki/StarCraft_II:_Legacy_of_the_Void)
-is a [Real Time Strategy
-(RTS)](https://en.wikipedia.org/wiki/Real-time_strategy) game written by
-[Blizzard](http://blizzard.com/). It's the successor to [StarCraft
-Broodwar](https://en.wikipedia.org/wiki/StarCraft:_Brood_War), which is one of
+is a [Real Time Strategy (RTS)](https://en.wikipedia.org/wiki/Real-time_strategy) game written by
+[Blizzard](http://blizzard.com/). It's the successor to [StarCraft Broodwar](https://en.wikipedia.org/wiki/StarCraft:_Brood_War), which is one of
 the most successful RTS games. StarCraft II is played by millions of people, and
 has a [professional league](https://wcs.starcraft2.com/en-us/).
 
@@ -78,8 +76,7 @@ generated with.
 ### Game and Action Speed
 
 Being a real-time strategy game means the game runs in real-time. In reality
-though, the simulation updates 16-22 times per second, depending on your [game
-speed](http://wiki.teamliquid.net/starcraft2/Game_Speed), and all the
+though, the simulation updates 16-22 times per second, depending on your [game speed](http://wiki.teamliquid.net/starcraft2/Game_Speed), and all the
 intermediate rendered frames are just interpolated.
 
 #### Game speed
@@ -101,17 +98,17 @@ by the game.
 
 There are actually two types reported by the game:
 
-*   Actions Per Minute (APM): counts every action.
-*   Effective Actions Per Minute (EPM): filters out actions that have no effect
-    (eg: redundant selections).
+- Actions Per Minute (APM): counts every action.
+- Effective Actions Per Minute (EPM): filters out actions that have no effect
+  (eg: redundant selections).
 
 Different actions count as different number of actions:
 
-*   Commands with target = 2 (eg: move, attack, build building)
-*   Commands with no target = 1 (eg: stop, train unit, unload cargo)
-*   Smart = 1 (right click)
-*   Selection and control groups = 1
-*   Everything else = 0 (eg: camera movement)
+- Commands with target = 2 (eg: move, attack, build building)
+- Commands with no target = 1 (eg: stop, train unit, unload cargo)
+- Smart = 1 (right click)
+- Selection and control groups = 1
+- Everything else = 0 (eg: camera movement)
 
 The in game replay UI exposes this with two different time intervals: average
 (average over the entire game so far), and current (average over the last 5
@@ -181,7 +178,7 @@ because there is a lot of text and numbers which agents aren't expected to learn
 to read, especially at low resolution. It's also because it's hard to reverse
 replays back to exactly the same visuals that the human saw.
 
-__Important Note:__
+**Important Note:**
 
 Spatial observations are in y-major screen coordinate space as `(y, x)`. Actions
 that require points on the screen or the minimap, however, expect the
@@ -233,16 +230,16 @@ corner of their screen.
 
 These are the minimap feature layers:
 
-*   **height_map**: Shows the terrain levels.
-*   **visibility**: Which part of the map are hidden, have been seen or are
-    currently visible.
-*   **creep**: Which parts have zerg creep.
-*   **camera**: Which part of the map are visible in the screen layers.
-*   **player_id**: Who owns the units, with absolute ids.
-*   **player_relative**: Which units are friendly vs hostile. Takes values in
-    [0, 4], denoting [background, self, ally, neutral, enemy] units
-    respectively.
-*   **selected**: Which units are selected.
+- **height_map**: Shows the terrain levels.
+- **visibility**: Which part of the map are hidden, have been seen or are
+  currently visible.
+- **creep**: Which parts have zerg creep.
+- **camera**: Which part of the map are visible in the screen layers.
+- **player_id**: Who owns the units, with absolute ids.
+- **player_relative**: Which units are friendly vs hostile. Takes values in
+  [0, 4], denoting [background, self, ally, neutral, enemy] units
+  respectively.
+- **selected**: Which units are selected.
 
 ###### Screen
 
@@ -265,31 +262,31 @@ playable.
 
 These are the screen feature layers:
 
-*   **height_map**: Shows the terrain levels.
-*   **visibility**: Which part of the map are hidden, have been seen or are
-    currently visible.
-*   **creep**: Which parts have zerg creep.
-*   **power**: Which parts have protoss power, only shows your power.
-*   **player_id**: Who owns the units, with absolute ids.
-*   **player_relative**: Which units are friendly vs hostile. Takes values in
-    [0, 4], denoting [background, self, ally, neutral, enemy] units
-    respectively.
-*   **unit_type**: A unit type id, which can be looked up in pysc2/lib/units.py.
-*   **selected**: Which units are selected.
-*   **hit_points**: How many hit points the unit has.
-*   **energy**: How much energy the unit has.
-*   **shields**: How much shields the unit has. Only for protoss units.
-*   **unit_density**: How many units are in this pixel.
-*   **unit_density_aa**: An anti-aliased version of unit_density with a maximum
-    of 16 per unit per pixel. This gives you sub-pixel unit location and size.
-    For example if a unit is exactly 1 pixel diameter, `unit_density` will show
-    it in exactly 1 pixel regardless of where in that pixel it is actually
-    centered. `unit_density_aa` will instead tell you how much of each pixel is
-    covered by the unit. A unit that is smaller than a pixel and centered in the
-    pixel will give a value less than the max. A unit with diameter 1 centered
-    near the corner of a pixel will give roughly a quarter of its value to each
-    of the 4 pixels it covers. If multiple units cover a pixel their proportion
-    of the pixel covered will be summed, up to a max of 256.
+- **height_map**: Shows the terrain levels.
+- **visibility**: Which part of the map are hidden, have been seen or are
+  currently visible.
+- **creep**: Which parts have zerg creep.
+- **power**: Which parts have protoss power, only shows your power.
+- **player_id**: Who owns the units, with absolute ids.
+- **player_relative**: Which units are friendly vs hostile. Takes values in
+  [0, 4], denoting [background, self, ally, neutral, enemy] units
+  respectively.
+- **unit_type**: A unit type id, which can be looked up in pysc2/lib/units.py.
+- **selected**: Which units are selected.
+- **hit_points**: How many hit points the unit has.
+- **energy**: How much energy the unit has.
+- **shields**: How much shields the unit has. Only for protoss units.
+- **unit_density**: How many units are in this pixel.
+- **unit_density_aa**: An anti-aliased version of unit_density with a maximum
+  of 16 per unit per pixel. This gives you sub-pixel unit location and size.
+  For example if a unit is exactly 1 pixel diameter, `unit_density` will show
+  it in exactly 1 pixel regardless of where in that pixel it is actually
+  centered. `unit_density_aa` will instead tell you how much of each pixel is
+  covered by the unit. A unit that is smaller than a pixel and centered in the
+  pixel will give a value less than the max. A unit with diameter 1 centered
+  near the corner of a pixel will give roughly a quarter of its value to each
+  of the 4 pixels it covers. If multiple units cover a pixel their proportion
+  of the pixel covered will be summed, up to a max of 256.
 
 #### Structured
 
@@ -301,17 +298,17 @@ meaning.
 
 A `(11)` tensor showing general information.
 
-*   player_id
-*   minerals
-*   vespene
-*   food used (otherwise known as supply)
-*   food cap
-*   food used by army
-*   food used by workers
-*   idle worker count
-*   army count
-*   warp gate count (for protoss)
-*   larva count (for zerg)
+- player_id
+- minerals
+- vespene
+- food used (otherwise known as supply)
+- food cap
+- food used by army
+- food used by workers
+- idle worker count
+- army count
+- warp gate count (for protoss)
+- larva count (for zerg)
 
 ##### Control groups
 
@@ -326,13 +323,13 @@ remember a selection set so that you can recall them easily later.
 
 A `(7)` tensor showing information about a selected unit.
 
-*   unit type
-*   player_relative
-*   health
-*   shields
-*   energy
-*   transport slot taken if it's in a transport
-*   build progress as a percentage if it's still being built
+- unit type
+- player_relative
+- health
+- shields
+- energy
+- transport slot taken if it's in a transport
+- build progress as a percentage if it's still being built
 
 ##### Multi Select
 
@@ -412,40 +409,40 @@ optionally with `--hide_specific`, `--screen_resolution` or
 similar to:
 
 ```
-   0/no_op                       ()
-   1/move_camera                 (1/minimap [64, 64])
-   2/select_point                (6/select_point_act [4]; 0/screen [84, 84])
-   3/select_rect                 (7/select_add [2]; 0/screen [84, 84]; 2/screen2 [84, 84])
-   4/select_control_group        (4/control_group_act [5]; 5/control_group_id [10])
-   5/select_unit                 (8/select_unit_act [4]; 9/select_unit_id [500])
-   6/select_idle_worker          (10/select_worker [4])
-   7/select_army                 (7/select_add [2])
-   8/select_warp_gates           (7/select_add [2])
-   9/select_larva                ()
-  10/unload                      (12/unload_id [500])
-  11/build_queue                 (11/build_queue_id [10])
-  12/Attack_screen               (3/queued [2]; 0/screen [84, 84])
-  13/Attack_minimap              (3/queued [2]; 1/minimap [64, 64])
-  14/Attack_Attack_screen        (3/queued [2]; 0/screen [84, 84])
-  19/Scan_Move_screen            (3/queued [2]; 0/screen [84, 84])
-  23/Behavior_CloakOff_quick     (3/queued [2])
-  26/Behavior_CloakOn_quick      (3/queued [2])
-  42/Build_Barracks_screen       (3/queued [2]; 0/screen [84, 84])
-  44/Build_CommandCenter_screen  (3/queued [2]; 0/screen [84, 84])
- 220/Effect_Repair_screen        (3/queued [2]; 0/screen [84, 84])
- 221/Effect_Repair_autocast      ()
- 264/Harvest_Gather_screen       (3/queued [2]; 0/screen [84, 84])
- 303/Morph_Lair_quick            (3/queued [2])
- 317/Morph_SiegeMode_quick       (3/queued [2])
- 322/Morph_Unsiege_quick         (3/queued [2])
- 331/Move_screen                 (3/queued [2]; 0/screen [84, 84])
- 333/Patrol_screen               (3/queued [2]; 0/screen [84, 84])
- 405/Research_Stimpack_quick     (3/queued [2])
- 451/Smart_screen                (3/queued [2]; 0/screen [84, 84])
- 452/Smart_minimap               (3/queued [2]; 1/minimap [64, 64])
- 453/Stop_quick                  (3/queued [2])
- 477/Train_Marine_quick          (3/queued [2])
-           *** 100s more lines ***
+  0/no_op                       ()
+  1/move_camera                 (1/minimap [64, 64])
+  2/select_point                (6/select_point_act [4]; 0/screen [84, 84])
+  3/select_rect                 (7/select_add [2]; 0/screen [84, 84]; 2/screen2 [84, 84])
+  4/select_control_group        (4/control_group_act [5]; 5/control_group_id [10])
+  5/select_unit                 (8/select_unit_act [4]; 9/select_unit_id [500])
+  6/select_idle_worker          (10/select_worker [4])
+  7/select_army                 (7/select_add [2])
+  8/select_warp_gates           (7/select_add [2])
+  9/select_larva                ()
+ 10/unload                      (12/unload_id [500])
+ 11/build_queue                 (11/build_queue_id [10])
+ 12/Attack_screen               (3/queued [2]; 0/screen [84, 84])
+ 13/Attack_minimap              (3/queued [2]; 1/minimap [64, 64])
+ 14/Attack_Attack_screen        (3/queued [2]; 0/screen [84, 84])
+ 19/Scan_Move_screen            (3/queued [2]; 0/screen [84, 84])
+ 23/Behavior_CloakOff_quick     (3/queued [2])
+ 26/Behavior_CloakOn_quick      (3/queued [2])
+ 42/Build_Barracks_screen       (3/queued [2]; 0/screen [84, 84])
+ 44/Build_CommandCenter_screen  (3/queued [2]; 0/screen [84, 84])
+220/Effect_Repair_screen        (3/queued [2]; 0/screen [84, 84])
+221/Effect_Repair_autocast      ()
+264/Harvest_Gather_screen       (3/queued [2]; 0/screen [84, 84])
+303/Morph_Lair_quick            (3/queued [2])
+317/Morph_SiegeMode_quick       (3/queued [2])
+322/Morph_Unsiege_quick         (3/queued [2])
+331/Move_screen                 (3/queued [2]; 0/screen [84, 84])
+333/Patrol_screen               (3/queued [2]; 0/screen [84, 84])
+405/Research_Stimpack_quick     (3/queued [2])
+451/Smart_screen                (3/queued [2]; 0/screen [84, 84])
+452/Smart_minimap               (3/queued [2]; 1/minimap [64, 64])
+453/Stop_quick                  (3/queued [2])
+477/Train_Marine_quick          (3/queued [2])
+          *** 100s more lines ***
 ```
 
 This should be read as: `<function id>/<function name>(<type id>/<type name>
@@ -453,13 +450,13 @@ This should be read as: `<function id>/<function name>(<type id>/<type name>
 
 Some examples:
 
-*   `1/move_camera (1/minimap [64, 64])` is the `move_camera` function (id `1`),
-    which takes one argument named `minimap` (id `1`) which requires two ints
-    each in the range `[0, 64)` which represent the coordinates on the minimap.
-*   `331/Move_screen (3/queued [2]; 0/screen [84, 84])` is the `Move_screen`
-    function (id `331`) which takes two arguments: `queued` (id `3`) which is a
-    bool and signifies whether this action should happen now or after previous
-    actions, and `screen` (id `0`) which takes two ints each in the range `[0,
+- `1/move_camera (1/minimap [64, 64])` is the `move_camera` function (id `1`),
+  which takes one argument named `minimap` (id `1`) which requires two ints
+  each in the range `[0, 64)` which represent the coordinates on the minimap.
+- `331/Move_screen (3/queued [2]; 0/screen [84, 84])` is the `Move_screen`
+  function (id `331`) which takes two arguments: `queued` (id `3`) which is a
+  bool and signifies whether this action should happen now or after previous
+  actions, and `screen` (id `0`) which takes two ints each in the range `[0,
     84)` which represent a pixel on the screen.
 
 The function names should be unique, stable and meaningful. The function and
@@ -559,11 +556,11 @@ Use the `run_loop.py` to have your agent interact with the environment.
 
 There is one pre-made environment wrapper:
 
-*   `available_actions_printer`: Prints each available action as it is seen.
+- `available_actions_printer`: Prints each available action as it is seen.
 
 ## Agents
 
 There are a couple basic agents.
 
-*   `random_agent`: Just plays randomly, shows how to make valid moves.
-*   `scripted_agent`: These are scripted for a single mini game.
+- `random_agent`: Just plays randomly, shows how to make valid moves.
+- `scripted_agent`: These are scripted for a single mini game.

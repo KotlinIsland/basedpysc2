@@ -5,6 +5,7 @@ uv sync
 ```
 
 if you need to work with c++:
+
 ```shell
 TODO bazel something
 ```

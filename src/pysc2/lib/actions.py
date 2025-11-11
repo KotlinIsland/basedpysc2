@@ -18,328 +18,363 @@ import enum
 import numbers
 
 import numpy
-from pysc2.lib import point
-
 from s2clientprotocol import spatial_pb2 as sc_spatial
 from s2clientprotocol import ui_pb2 as sc_ui
 
+from pysc2.lib import point
+
 
 class ActionSpace(enum.Enum):
-  FEATURES = 1  # Act in feature layer pixel space with FUNCTIONS below.
-  RGB = 2       # Act in RGB pixel space with FUNCTIONS below.
-  RAW = 3       # Act with unit tags with RAW_FUNCTIONS below.
+    FEATURES = 1  # Act in feature layer pixel space with FUNCTIONS below.
+    RGB = 2  # Act in RGB pixel space with FUNCTIONS below.
+    RAW = 3  # Act with unit tags with RAW_FUNCTIONS below.
 
 
 def spatial(action, action_space):
-  """Choose the action space for the action proto."""
-  if action_space == ActionSpace.FEATURES:
-    return action.action_feature_layer
-  elif action_space == ActionSpace.RGB:
-    return action.action_render
-  else:
-    raise ValueError("Unexpected value for action_space: %s" % action_space)
+    """Choose the action space for the action proto."""
+    if action_space == ActionSpace.FEATURES:
+        return action.action_feature_layer
+    elif action_space == ActionSpace.RGB:
+        return action.action_render
+    else:
+        raise ValueError("Unexpected value for action_space: %s" % action_space)
 
 
 def no_op(action, action_space):
-  del action, action_space
+    del action, action_space
 
 
 def move_camera(action, action_space, minimap):
-  """Move the camera."""
-  minimap.assign_to(spatial(action, action_space).camera_move.center_minimap)
+    """Move the camera."""
+    minimap.assign_to(spatial(action, action_space).camera_move.center_minimap)
 
 
 def select_point(action, action_space, select_point_act, screen):
-  """Select a unit at a point."""
-  select = spatial(action, action_space).unit_selection_point
-  screen.assign_to(select.selection_screen_coord)
-  select.type = select_point_act
+    """Select a unit at a point."""
+    select = spatial(action, action_space).unit_selection_point
+    screen.assign_to(select.selection_screen_coord)
+    select.type = select_point_act
 
 
 def select_rect(action, action_space, select_add, screen, screen2):
-  """Select units within a rectangle."""
-  select = spatial(action, action_space).unit_selection_rect
-  out_rect = select.selection_screen_coord.add()
-  screen_rect = point.Rect(screen, screen2)
-  screen_rect.tl.assign_to(out_rect.p0)
-  screen_rect.br.assign_to(out_rect.p1)
-  select.selection_add = bool(select_add)
+    """Select units within a rectangle."""
+    select = spatial(action, action_space).unit_selection_rect
+    out_rect = select.selection_screen_coord.add()
+    screen_rect = point.Rect(screen, screen2)
+    screen_rect.tl.assign_to(out_rect.p0)
+    screen_rect.br.assign_to(out_rect.p1)
+    select.selection_add = bool(select_add)
 
 
 def select_idle_worker(action, action_space, select_worker):
-  """Select an idle worker."""
-  del action_space
-  action.action_ui.select_idle_worker.type = select_worker
+    """Select an idle worker."""
+    del action_space
+    action.action_ui.select_idle_worker.type = select_worker
 
 
 def select_army(action, action_space, select_add):
-  """Select the entire army."""
-  del action_space
-  action.action_ui.select_army.selection_add = select_add
+    """Select the entire army."""
+    del action_space
+    action.action_ui.select_army.selection_add = select_add
 
 
 def select_warp_gates(action, action_space, select_add):
-  """Select all warp gates."""
-  del action_space
-  action.action_ui.select_warp_gates.selection_add = select_add
+    """Select all warp gates."""
+    del action_space
+    action.action_ui.select_warp_gates.selection_add = select_add
 
 
 def select_larva(action, action_space):
-  """Select all larva."""
-  del action_space
-  action.action_ui.select_larva.SetInParent()  # Adds the empty proto field.
+    """Select all larva."""
+    del action_space
+    action.action_ui.select_larva.SetInParent()  # Adds the empty proto field.
 
 
 def select_unit(action, action_space, select_unit_act, select_unit_id):
-  """Select a specific unit from the multi-unit selection."""
-  del action_space
-  select = action.action_ui.multi_panel
-  select.type = select_unit_act
-  select.unit_index = select_unit_id
+    """Select a specific unit from the multi-unit selection."""
+    del action_space
+    select = action.action_ui.multi_panel
+    select.type = select_unit_act
+    select.unit_index = select_unit_id
 
 
 def control_group(action, action_space, control_group_act, control_group_id):
-  """Act on a control group, selecting, setting, etc."""
-  del action_space
-  select = action.action_ui.control_group
-  select.action = control_group_act
-  select.control_group_index = control_group_id
+    """Act on a control group, selecting, setting, etc."""
+    del action_space
+    select = action.action_ui.control_group
+    select.action = control_group_act
+    select.control_group_index = control_group_id
 
 
 def unload(action, action_space, unload_id):
-  """Unload a unit from a transport/bunker/nydus/etc."""
-  del action_space
-  action.action_ui.cargo_panel.unit_index = unload_id
+    """Unload a unit from a transport/bunker/nydus/etc."""
+    del action_space
+    action.action_ui.cargo_panel.unit_index = unload_id
 
 
 def build_queue(action, action_space, build_queue_id):
-  """Cancel a unit in the build queue."""
-  del action_space
-  action.action_ui.production_panel.unit_index = build_queue_id
+    """Cancel a unit in the build queue."""
+    del action_space
+    action.action_ui.production_panel.unit_index = build_queue_id
 
 
 def cmd_quick(action, action_space, ability_id, queued):
-  """Do a quick command like 'Stop' or 'Stim'."""
-  action_cmd = spatial(action, action_space).unit_command
-  action_cmd.ability_id = ability_id
-  action_cmd.queue_command = queued
+    """Do a quick command like 'Stop' or 'Stim'."""
+    action_cmd = spatial(action, action_space).unit_command
+    action_cmd.ability_id = ability_id
+    action_cmd.queue_command = queued
 
 
 def cmd_screen(action, action_space, ability_id, queued, screen):
-  """Do a command that needs a point on the screen."""
-  action_cmd = spatial(action, action_space).unit_command
-  action_cmd.ability_id = ability_id
-  action_cmd.queue_command = queued
-  screen.assign_to(action_cmd.target_screen_coord)
+    """Do a command that needs a point on the screen."""
+    action_cmd = spatial(action, action_space).unit_command
+    action_cmd.ability_id = ability_id
+    action_cmd.queue_command = queued
+    screen.assign_to(action_cmd.target_screen_coord)
 
 
 def cmd_minimap(action, action_space, ability_id, queued, minimap):
-  """Do a command that needs a point on the minimap."""
-  action_cmd = spatial(action, action_space).unit_command
-  action_cmd.ability_id = ability_id
-  action_cmd.queue_command = queued
-  minimap.assign_to(action_cmd.target_minimap_coord)
+    """Do a command that needs a point on the minimap."""
+    action_cmd = spatial(action, action_space).unit_command
+    action_cmd.ability_id = ability_id
+    action_cmd.queue_command = queued
+    minimap.assign_to(action_cmd.target_minimap_coord)
 
 
 def autocast(action, action_space, ability_id):
-  """Toggle autocast."""
-  del action_space
-  action.action_ui.toggle_autocast.ability_id = ability_id
+    """Toggle autocast."""
+    del action_space
+    action.action_ui.toggle_autocast.ability_id = ability_id
 
 
 def raw_no_op(action):
-  del action
+    del action
 
 
 def raw_move_camera(action, world):
-  """Move the camera."""
-  action_cmd = action.action_raw.camera_move
-  world.assign_to(action_cmd.center_world_space)
+    """Move the camera."""
+    action_cmd = action.action_raw.camera_move
+    world.assign_to(action_cmd.center_world_space)
 
 
 def raw_cmd(action, ability_id, queued, unit_tags):
-  """Do a raw command to another unit."""
-  action_cmd = action.action_raw.unit_command
-  action_cmd.ability_id = ability_id
-  action_cmd.queue_command = queued
-  if not isinstance(unit_tags, (tuple, list)):
-    unit_tags = [unit_tags]
-  action_cmd.unit_tags.extend(unit_tags)
+    """Do a raw command to another unit."""
+    action_cmd = action.action_raw.unit_command
+    action_cmd.ability_id = ability_id
+    action_cmd.queue_command = queued
+    if not isinstance(unit_tags, (tuple, list)):
+        unit_tags = [unit_tags]
+    action_cmd.unit_tags.extend(unit_tags)
 
 
 def raw_cmd_pt(action, ability_id, queued, unit_tags, world):
-  """Do a raw command to another unit towards a point."""
-  action_cmd = action.action_raw.unit_command
-  action_cmd.ability_id = ability_id
-  action_cmd.queue_command = queued
-  if not isinstance(unit_tags, (tuple, list)):
-    unit_tags = [unit_tags]
-  action_cmd.unit_tags.extend(unit_tags)
-  world.assign_to(action_cmd.target_world_space_pos)
+    """Do a raw command to another unit towards a point."""
+    action_cmd = action.action_raw.unit_command
+    action_cmd.ability_id = ability_id
+    action_cmd.queue_command = queued
+    if not isinstance(unit_tags, (tuple, list)):
+        unit_tags = [unit_tags]
+    action_cmd.unit_tags.extend(unit_tags)
+    world.assign_to(action_cmd.target_world_space_pos)
 
 
-def raw_cmd_unit(action, ability_id, queued, unit_tags,
-                 target_unit_tag):
-  """Do a raw command to another unit towards a unit."""
-  action_cmd = action.action_raw.unit_command
-  action_cmd.ability_id = ability_id
-  action_cmd.queue_command = queued
-  if not isinstance(unit_tags, (tuple, list)):
-    unit_tags = [unit_tags]
-  action_cmd.unit_tags.extend(unit_tags)
-  action_cmd.target_unit_tag = target_unit_tag
+def raw_cmd_unit(action, ability_id, queued, unit_tags, target_unit_tag):
+    """Do a raw command to another unit towards a unit."""
+    action_cmd = action.action_raw.unit_command
+    action_cmd.ability_id = ability_id
+    action_cmd.queue_command = queued
+    if not isinstance(unit_tags, (tuple, list)):
+        unit_tags = [unit_tags]
+    action_cmd.unit_tags.extend(unit_tags)
+    action_cmd.target_unit_tag = target_unit_tag
 
 
 def raw_autocast(action, ability_id, unit_tags):
-  """Toggle autocast."""
-  action_cmd = action.action_raw.toggle_autocast
-  action_cmd.ability_id = ability_id
-  if not isinstance(unit_tags, (tuple, list)):
-    unit_tags = [unit_tags]
-  action_cmd.unit_tags.extend(unit_tags)
+    """Toggle autocast."""
+    action_cmd = action.action_raw.toggle_autocast
+    action_cmd.ability_id = ability_id
+    if not isinstance(unit_tags, (tuple, list)):
+        unit_tags = [unit_tags]
+    action_cmd.unit_tags.extend(unit_tags)
 
 
 def numpy_to_python(val):
-  """Convert numpy types to their corresponding python types."""
-  if isinstance(val, (int, float)):
-    return val
-  if isinstance(val, str):
-    return val
-  if (isinstance(val, numpy.number) or
-      isinstance(val, numpy.ndarray) and not val.shape):  # numpy.array(1)
-    return val.item()
-  if isinstance(val, (list, tuple, numpy.ndarray)):
-    return [numpy_to_python(v) for v in val]
-  raise ValueError("Unknown value. Type: %s, repr: %s" % (type(val), repr(val)))
+    """Convert numpy types to their corresponding python types."""
+    if isinstance(val, (int, float)):
+        return val
+    if isinstance(val, str):
+        return val
+    if (
+        isinstance(val, numpy.number)
+        or isinstance(val, numpy.ndarray)
+        and not val.shape
+    ):  # numpy.array(1)
+        return val.item()
+    if isinstance(val, (list, tuple, numpy.ndarray)):
+        return [numpy_to_python(v) for v in val]
+    raise ValueError("Unknown value. Type: %s, repr: %s" % (type(val), repr(val)))
 
 
-class ArgumentType(collections.namedtuple(
-    "ArgumentType", ["id", "name", "sizes", "fn", "values", "count"])):
-  """Represents a single argument type.
+class ArgumentType(
+    collections.namedtuple(
+        "ArgumentType", ["id", "name", "sizes", "fn", "values", "count"]
+    )
+):
+    """Represents a single argument type.
 
-  Attributes:
-    id: The argument id. This is unique.
-    name: The name of the argument, also unique.
-    sizes: The max+1 of each of the dimensions this argument takes.
-    fn: The function to convert the list of integers into something more
-        meaningful to be set in the protos to send to the game.
-    values: An enum representing the values this argument type could hold. None
-        if this isn't an enum argument type.
-    count: Number of valid values. Only useful for unit_tags.
-  """
-  __slots__ = ()
+    Attributes:
+      id: The argument id. This is unique.
+      name: The name of the argument, also unique.
+      sizes: The max+1 of each of the dimensions this argument takes.
+      fn: The function to convert the list of integers into something more
+          meaningful to be set in the protos to send to the game.
+      values: An enum representing the values this argument type could hold. None
+          if this isn't an enum argument type.
+      count: Number of valid values. Only useful for unit_tags.
+    """
 
-  def __str__(self):
-    return "%s/%s %s" % (self.id, self.name, list(self.sizes))
+    __slots__ = ()
 
-  def __reduce__(self):
-    return self.__class__, tuple(self)
+    def __str__(self):
+        return "%s/%s %s" % (self.id, self.name, list(self.sizes))
 
-  @classmethod
-  def enum(cls, options, values):
-    """Create an ArgumentType where you choose one of a set of known values."""
-    names, real = zip(*options)
-    del names  # unused
+    def __reduce__(self):
+        return self.__class__, tuple(self)
 
-    def factory(i, name):
-      return cls(i, name, (len(real),), lambda a: real[a[0]], values, None)
-    return factory
+    @classmethod
+    def enum(cls, options, values):
+        """Create an ArgumentType where you choose one of a set of known values."""
+        names, real = zip(*options)
+        del names  # unused
 
-  @classmethod
-  def scalar(cls, value):
-    """Create an ArgumentType with a single scalar in range(value)."""
-    return lambda i, name: cls(i, name, (value,), lambda a: a[0], None, None)
+        def factory(i, name):
+            return cls(i, name, (len(real),), lambda a: real[a[0]], values, None)
 
-  @classmethod
-  def point(cls):  # No range because it's unknown at this time.
-    """Create an ArgumentType that is represented by a point.Point."""
-    def factory(i, name):
-      return cls(i, name, (0, 0), lambda a: point.Point(*a).floor(), None, None)
-    return factory
+        return factory
 
-  @classmethod
-  def spec(cls, id_, name, sizes):
-    """Create an ArgumentType to be used in ValidActions."""
-    return cls(id_, name, sizes, None, None, None)
+    @classmethod
+    def scalar(cls, value):
+        """Create an ArgumentType with a single scalar in range(value)."""
+        return lambda i, name: cls(i, name, (value,), lambda a: a[0], None, None)
 
-  @classmethod
-  def unit_tags(cls, count, size):
-    """Create an ArgumentType with a list of unbounded ints."""
-    def clean(arg):
-      arg = numpy_to_python(arg)
-      if isinstance(arg, list) and len(arg) == 1 and isinstance(arg[0], list):
-        arg = arg[0]  # Support [[list, of, tags]].
-      return arg[:count]
-    return lambda i, name: cls(i, name, (size,), clean, None, count)
+    @classmethod
+    def point(cls):  # No range because it's unknown at this time.
+        """Create an ArgumentType that is represented by a point.Point."""
 
+        def factory(i, name):
+            return cls(i, name, (0, 0), lambda a: point.Point(*a).floor(), None, None)
 
-class Arguments(collections.namedtuple("Arguments", [
-    "screen", "minimap", "screen2", "queued", "control_group_act",
-    "control_group_id", "select_point_act", "select_add", "select_unit_act",
-    "select_unit_id", "select_worker", "build_queue_id", "unload_id"])):
-  """The full list of argument types.
+        return factory
 
-  Take a look at TYPES and FUNCTION_TYPES for more details.
+    @classmethod
+    def spec(cls, id_, name, sizes):
+        """Create an ArgumentType to be used in ValidActions."""
+        return cls(id_, name, sizes, None, None, None)
 
-  Attributes:
-    screen: A point on the screen.
-    minimap: A point on the minimap.
-    screen2: The second point for a rectangle. This is needed so that no
-        function takes the same type twice.
-    queued: Whether the action should be done immediately or after all other
-        actions queued for this unit.
-    control_group_act: What to do with the control group.
-    control_group_id: Which control group to do it with.
-    select_point_act: What to do with the unit at the point.
-    select_add: Whether to add the unit to the selection or replace it.
-    select_unit_act: What to do when selecting a unit by id.
-    select_unit_id: Which unit to select by id.
-    select_worker: What to do when selecting a worker.
-    build_queue_id: Which build queue index to target.
-    unload_id: Which unit to target in a transport/nydus/command center.
-  """
-  __slots__ = ()
+    @classmethod
+    def unit_tags(cls, count, size):
+        """Create an ArgumentType with a list of unbounded ints."""
 
-  @classmethod
-  def types(cls, **kwargs):
-    """Create an Arguments of the possible Types."""
-    named = {name: factory(Arguments._fields.index(name), name)
-             for name, factory in kwargs.items()}
-    return cls(**named)
+        def clean(arg):
+            arg = numpy_to_python(arg)
+            if isinstance(arg, list) and len(arg) == 1 and isinstance(arg[0], list):
+                arg = arg[0]  # Support [[list, of, tags]].
+            return arg[:count]
 
-  def __reduce__(self):
-    return self.__class__, tuple(self)
+        return lambda i, name: cls(i, name, (size,), clean, None, count)
 
 
-class RawArguments(collections.namedtuple("RawArguments", [
-    "world", "queued", "unit_tags", "target_unit_tag"])):
-  """The full list of argument types.
+class Arguments(
+    collections.namedtuple(
+        "Arguments",
+        [
+            "screen",
+            "minimap",
+            "screen2",
+            "queued",
+            "control_group_act",
+            "control_group_id",
+            "select_point_act",
+            "select_add",
+            "select_unit_act",
+            "select_unit_id",
+            "select_worker",
+            "build_queue_id",
+            "unload_id",
+        ],
+    )
+):
+    """The full list of argument types.
 
-  Take a look at TYPES and FUNCTION_TYPES for more details.
+    Take a look at TYPES and FUNCTION_TYPES for more details.
 
-  Attributes:
-    world: A point in world coordinates
-    queued: Whether the action should be done immediately or after all other
-        actions queued for this unit.
-    unit_tags: Which units should execute this action.
-    target_unit_tag: The target unit of this action.
-  """
-  __slots__ = ()
+    Attributes:
+      screen: A point on the screen.
+      minimap: A point on the minimap.
+      screen2: The second point for a rectangle. This is needed so that no
+          function takes the same type twice.
+      queued: Whether the action should be done immediately or after all other
+          actions queued for this unit.
+      control_group_act: What to do with the control group.
+      control_group_id: Which control group to do it with.
+      select_point_act: What to do with the unit at the point.
+      select_add: Whether to add the unit to the selection or replace it.
+      select_unit_act: What to do when selecting a unit by id.
+      select_unit_id: Which unit to select by id.
+      select_worker: What to do when selecting a worker.
+      build_queue_id: Which build queue index to target.
+      unload_id: Which unit to target in a transport/nydus/command center.
+    """
 
-  @classmethod
-  def types(cls, **kwargs):
-    """Create an Arguments of the possible Types."""
-    named = {name: factory(RawArguments._fields.index(name), name)
-             for name, factory in kwargs.items()}
-    return cls(**named)
+    __slots__ = ()
 
-  def __reduce__(self):
-    return self.__class__, tuple(self)
+    @classmethod
+    def types(cls, **kwargs):
+        """Create an Arguments of the possible Types."""
+        named = {
+            name: factory(Arguments._fields.index(name), name)
+            for name, factory in kwargs.items()
+        }
+        return cls(**named)
+
+    def __reduce__(self):
+        return self.__class__, tuple(self)
+
+
+class RawArguments(
+    collections.namedtuple(
+        "RawArguments", ["world", "queued", "unit_tags", "target_unit_tag"]
+    )
+):
+    """The full list of argument types.
+
+    Take a look at TYPES and FUNCTION_TYPES for more details.
+
+    Attributes:
+      world: A point in world coordinates
+      queued: Whether the action should be done immediately or after all other
+          actions queued for this unit.
+      unit_tags: Which units should execute this action.
+      target_unit_tag: The target unit of this action.
+    """
+
+    __slots__ = ()
+
+    @classmethod
+    def types(cls, **kwargs):
+        """Create an Arguments of the possible Types."""
+        named = {
+            name: factory(RawArguments._fields.index(name), name)
+            for name, factory in kwargs.items()
+        }
+        return cls(**named)
+
+    def __reduce__(self):
+        return self.__class__, tuple(self)
 
 
 def _define_position_based_enum(name, options):
-  return enum.IntEnum(
-      name, {opt_name: i for i, (opt_name, _) in enumerate(options)})
+    return enum.IntEnum(name, {opt_name: i for i, (opt_name, _) in enumerate(options)})
 
 
 QUEUED_OPTIONS = [
@@ -347,7 +382,8 @@ QUEUED_OPTIONS = [
     ("queued", True),
 ]
 Queued = _define_position_based_enum(  # pylint: disable=invalid-name
-    "Queued", QUEUED_OPTIONS)
+    "Queued", QUEUED_OPTIONS
+)
 
 CONTROL_GROUP_ACT_OPTIONS = [
     ("recall", sc_ui.ActionControlGroup.Recall),
@@ -357,7 +393,8 @@ CONTROL_GROUP_ACT_OPTIONS = [
     ("append_and_steal", sc_ui.ActionControlGroup.AppendAndSteal),
 ]
 ControlGroupAct = _define_position_based_enum(  # pylint: disable=invalid-name
-    "ControlGroupAct", CONTROL_GROUP_ACT_OPTIONS)
+    "ControlGroupAct", CONTROL_GROUP_ACT_OPTIONS
+)
 
 SELECT_POINT_ACT_OPTIONS = [
     ("select", sc_spatial.ActionSpatialUnitSelectionPoint.Select),
@@ -366,14 +403,16 @@ SELECT_POINT_ACT_OPTIONS = [
     ("add_all_type", sc_spatial.ActionSpatialUnitSelectionPoint.AddAllType),
 ]
 SelectPointAct = _define_position_based_enum(  # pylint: disable=invalid-name
-    "SelectPointAct", SELECT_POINT_ACT_OPTIONS)
+    "SelectPointAct", SELECT_POINT_ACT_OPTIONS
+)
 
 SELECT_ADD_OPTIONS = [
     ("select", False),
     ("add", True),
 ]
 SelectAdd = _define_position_based_enum(  # pylint: disable=invalid-name
-    "SelectAdd", SELECT_ADD_OPTIONS)
+    "SelectAdd", SELECT_ADD_OPTIONS
+)
 
 SELECT_UNIT_ACT_OPTIONS = [
     ("select", sc_ui.ActionMultiPanel.SingleSelect),
@@ -382,7 +421,8 @@ SELECT_UNIT_ACT_OPTIONS = [
     ("deselect_all_type", sc_ui.ActionMultiPanel.DeselectAllOfType),
 ]
 SelectUnitAct = _define_position_based_enum(  # pylint: disable=invalid-name
-    "SelectUnitAct", SELECT_UNIT_ACT_OPTIONS)
+    "SelectUnitAct", SELECT_UNIT_ACT_OPTIONS
+)
 
 SELECT_WORKER_OPTIONS = [
     ("select", sc_ui.ActionSelectIdleWorker.Set),
@@ -391,7 +431,8 @@ SELECT_WORKER_OPTIONS = [
     ("add_all", sc_ui.ActionSelectIdleWorker.AddAll),
 ]
 SelectWorker = _define_position_based_enum(  # pylint: disable=invalid-name
-    "SelectWorker", SELECT_WORKER_OPTIONS)
+    "SelectWorker", SELECT_WORKER_OPTIONS
+)
 
 
 # The list of known types.
@@ -400,11 +441,9 @@ TYPES = Arguments.types(
     minimap=ArgumentType.point(),
     screen2=ArgumentType.point(),
     queued=ArgumentType.enum(QUEUED_OPTIONS, Queued),
-    control_group_act=ArgumentType.enum(
-        CONTROL_GROUP_ACT_OPTIONS, ControlGroupAct),
+    control_group_act=ArgumentType.enum(CONTROL_GROUP_ACT_OPTIONS, ControlGroupAct),
     control_group_id=ArgumentType.scalar(10),
-    select_point_act=ArgumentType.enum(
-        SELECT_POINT_ACT_OPTIONS, SelectPointAct),
+    select_point_act=ArgumentType.enum(SELECT_POINT_ACT_OPTIONS, SelectPointAct),
     select_add=ArgumentType.enum(SELECT_ADD_OPTIONS, SelectAdd),
     select_unit_act=ArgumentType.enum(SELECT_UNIT_ACT_OPTIONS, SelectUnitAct),
     select_unit_id=ArgumentType.scalar(500),  # Depends on current selection.
@@ -442,8 +481,7 @@ FUNCTION_TYPES = {
     raw_no_op: [],
     raw_cmd: [RAW_TYPES.queued, RAW_TYPES.unit_tags],
     raw_cmd_pt: [RAW_TYPES.queued, RAW_TYPES.unit_tags, RAW_TYPES.world],
-    raw_cmd_unit: [RAW_TYPES.queued, RAW_TYPES.unit_tags,
-                   RAW_TYPES.target_unit_tag],
+    raw_cmd_unit: [RAW_TYPES.queued, RAW_TYPES.unit_tags, RAW_TYPES.target_unit_tag],
     raw_move_camera: [RAW_TYPES.world],
     raw_autocast: [RAW_TYPES.unit_tags],
 }
@@ -455,121 +493,170 @@ RAW_ABILITY_FUNCTIONS = {raw_cmd, raw_cmd_pt, raw_cmd_unit, raw_autocast}
 # Which ones require a point?
 POINT_REQUIRED_FUNCS = {
     False: {cmd_quick, autocast},
-    True: {cmd_screen, cmd_minimap, autocast}}
+    True: {cmd_screen, cmd_minimap, autocast},
+}
 
 always = lambda _: True
 
 
-class Function(collections.namedtuple(
-    "Function", ["id", "name", "ability_id", "general_id", "function_type",
-                 "args", "avail_fn", "raw"])):
-  """Represents a function action.
+class Function(
+    collections.namedtuple(
+        "Function",
+        [
+            "id",
+            "name",
+            "ability_id",
+            "general_id",
+            "function_type",
+            "args",
+            "avail_fn",
+            "raw",
+        ],
+    )
+):
+    """Represents a function action.
 
-  Attributes:
-    id: The function id, which is what the agent will use.
-    name: The name of the function. Should be unique.
-    ability_id: The ability id to pass to sc2.
-    general_id: 0 for normal abilities, and the ability_id of another ability if
-        it can be represented by a more general action.
-    function_type: One of the functions in FUNCTION_TYPES for how to construct
-        the sc2 action proto out of python types.
-    args: A list of the types of args passed to function_type.
-    avail_fn: For non-abilities, this function returns whether the function is
-        valid.
-    raw: Whether the function is raw or not.
-  """
-  __slots__ = ()
+    Attributes:
+      id: The function id, which is what the agent will use.
+      name: The name of the function. Should be unique.
+      ability_id: The ability id to pass to sc2.
+      general_id: 0 for normal abilities, and the ability_id of another ability if
+          it can be represented by a more general action.
+      function_type: One of the functions in FUNCTION_TYPES for how to construct
+          the sc2 action proto out of python types.
+      args: A list of the types of args passed to function_type.
+      avail_fn: For non-abilities, this function returns whether the function is
+          valid.
+      raw: Whether the function is raw or not.
+    """
 
-  @classmethod
-  def ui_func(cls, id_, name, function_type, avail_fn=always):
-    """Define a function representing a ui action."""
-    return cls(id_, name, 0, 0, function_type, FUNCTION_TYPES[function_type],
-               avail_fn, False)
+    __slots__ = ()
 
-  @classmethod
-  def ability(cls, id_, name, function_type, ability_id, general_id=0):
-    """Define a function represented as a game ability."""
-    assert function_type in ABILITY_FUNCTIONS
-    return cls(id_, name, ability_id, general_id, function_type,
-               FUNCTION_TYPES[function_type], None, False)
+    @classmethod
+    def ui_func(cls, id_, name, function_type, avail_fn=always):
+        """Define a function representing a ui action."""
+        return cls(
+            id_,
+            name,
+            0,
+            0,
+            function_type,
+            FUNCTION_TYPES[function_type],
+            avail_fn,
+            False,
+        )
 
-  @classmethod
-  def raw_ability(cls, id_, name, function_type, ability_id, general_id=0,
-                  avail_fn=always):
-    """Define a function represented as a game ability."""
-    assert function_type in RAW_ABILITY_FUNCTIONS
-    return cls(id_, name, ability_id, general_id, function_type,
-               FUNCTION_TYPES[function_type], avail_fn, True)
+    @classmethod
+    def ability(cls, id_, name, function_type, ability_id, general_id=0):
+        """Define a function represented as a game ability."""
+        assert function_type in ABILITY_FUNCTIONS
+        return cls(
+            id_,
+            name,
+            ability_id,
+            general_id,
+            function_type,
+            FUNCTION_TYPES[function_type],
+            None,
+            False,
+        )
 
-  @classmethod
-  def raw_ui_func(cls, id_, name, function_type, avail_fn=always):
-    """Define a function representing a ui action."""
-    return cls(id_, name, 0, 0, function_type, FUNCTION_TYPES[function_type],
-               avail_fn, True)
+    @classmethod
+    def raw_ability(
+        cls, id_, name, function_type, ability_id, general_id=0, avail_fn=always
+    ):
+        """Define a function represented as a game ability."""
+        assert function_type in RAW_ABILITY_FUNCTIONS
+        return cls(
+            id_,
+            name,
+            ability_id,
+            general_id,
+            function_type,
+            FUNCTION_TYPES[function_type],
+            avail_fn,
+            True,
+        )
 
-  @classmethod
-  def spec(cls, id_, name, args):
-    """Create a Function to be used in ValidActions."""
-    return cls(id_, name, None, None, None, args, None, False)
+    @classmethod
+    def raw_ui_func(cls, id_, name, function_type, avail_fn=always):
+        """Define a function representing a ui action."""
+        return cls(
+            id_,
+            name,
+            0,
+            0,
+            function_type,
+            FUNCTION_TYPES[function_type],
+            avail_fn,
+            True,
+        )
 
-  def __hash__(self):  # So it can go in a set().
-    return self.id
+    @classmethod
+    def spec(cls, id_, name, args):
+        """Create a Function to be used in ValidActions."""
+        return cls(id_, name, None, None, None, args, None, False)
 
-  def __str__(self):
-    return self.str()
+    def __hash__(self):  # So it can go in a set().
+        return self.id
 
-  def __call__(self, *args):
-    """A convenient way to create a FunctionCall from this Function."""
-    return FunctionCall.init_with_validation(self.id, args, raw=self.raw)
+    def __str__(self):
+        return self.str()
 
-  def __reduce__(self):
-    return self.__class__, tuple(self)
+    def __call__(self, *args):
+        """A convenient way to create a FunctionCall from this Function."""
+        return FunctionCall.init_with_validation(self.id, args, raw=self.raw)
 
-  def str(self, space=False):
-    """String version. Set space=True to line them all up nicely."""
-    return "%s/%s (%s)" % (str(int(self.id)).rjust(space and 4),
-                           self.name.ljust(space and 50),
-                           "; ".join(str(a) for a in self.args))
+    def __reduce__(self):
+        return self.__class__, tuple(self)
+
+    def str(self, space=False):
+        """String version. Set space=True to line them all up nicely."""
+        return "%s/%s (%s)" % (
+            str(int(self.id)).rjust(space and 4),
+            self.name.ljust(space and 50),
+            "; ".join(str(a) for a in self.args),
+        )
 
 
 class Functions(object):
-  """Represents the full set of functions.
+    """Represents the full set of functions.
 
-  Can't use namedtuple since python3 has a limit of 255 function arguments, so
-  build something similar.
-  """
+    Can't use namedtuple since python3 has a limit of 255 function arguments, so
+    build something similar.
+    """
 
-  def __init__(self, functions):
-    functions = sorted(functions, key=lambda f: f.id)
-    self._func_list = functions
-    self._func_dict = {f.name: f for f in functions}
-    if len(self._func_dict) != len(self._func_list):
-      raise ValueError("Function names must be unique.")
+    def __init__(self, functions):
+        functions = sorted(functions, key=lambda f: f.id)
+        self._func_list = functions
+        self._func_dict = {f.name: f for f in functions}
+        if len(self._func_dict) != len(self._func_list):
+            raise ValueError("Function names must be unique.")
 
-  def __getattr__(self, name):
-    return self._func_dict[name]
+    def __getattr__(self, name):
+        return self._func_dict[name]
 
-  def __getitem__(self, key):
-    if isinstance(key, numbers.Integral):
-      return self._func_list[key]
-    return self._func_dict[key]
+    def __getitem__(self, key):
+        if isinstance(key, numbers.Integral):
+            return self._func_list[key]
+        return self._func_dict[key]
 
-  def __getstate__(self):
-    # Support pickling, which otherwise conflicts with __getattr__.
-    return self._func_list
+    def __getstate__(self):
+        # Support pickling, which otherwise conflicts with __getattr__.
+        return self._func_list
 
-  def __setstate__(self, functions):
-    # Support pickling, which otherwise conflicts with __getattr__.
-    self.__init__(functions)
+    def __setstate__(self, functions):
+        # Support pickling, which otherwise conflicts with __getattr__.
+        self.__init__(functions)
 
-  def __iter__(self):
-    return iter(self._func_list)
+    def __iter__(self):
+        return iter(self._func_list)
 
-  def __len__(self):
-    return len(self._func_list)
+    def __len__(self):
+        return len(self._func_list)
 
-  def __eq__(self, other):
-    return self._func_list == other._func_list  # pylint: disable=protected-access
+    def __eq__(self, other):
+        return self._func_list == other._func_list  # pylint: disable=protected-access
 
 
 # The semantic meaning of these actions can mainly be found by searching:
@@ -581,20 +668,31 @@ _FUNCTIONS = [
     Function.ui_func(2, "select_point", select_point),
     Function.ui_func(3, "select_rect", select_rect),
     Function.ui_func(4, "select_control_group", control_group),
-    Function.ui_func(5, "select_unit", select_unit,
-                     lambda obs: obs.ui_data.HasField("multi")),
-    Function.ui_func(6, "select_idle_worker", select_idle_worker,
-                     lambda obs: obs.player_common.idle_worker_count > 0),
-    Function.ui_func(7, "select_army", select_army,
-                     lambda obs: obs.player_common.army_count > 0),
-    Function.ui_func(8, "select_warp_gates", select_warp_gates,
-                     lambda obs: obs.player_common.warp_gate_count > 0),
-    Function.ui_func(9, "select_larva", select_larva,
-                     lambda obs: obs.player_common.larva_count > 0),
-    Function.ui_func(10, "unload", unload,
-                     lambda obs: obs.ui_data.HasField("cargo")),
-    Function.ui_func(11, "build_queue", build_queue,
-                     lambda obs: obs.ui_data.HasField("production")),
+    Function.ui_func(
+        5, "select_unit", select_unit, lambda obs: obs.ui_data.HasField("multi")
+    ),
+    Function.ui_func(
+        6,
+        "select_idle_worker",
+        select_idle_worker,
+        lambda obs: obs.player_common.idle_worker_count > 0,
+    ),
+    Function.ui_func(
+        7, "select_army", select_army, lambda obs: obs.player_common.army_count > 0
+    ),
+    Function.ui_func(
+        8,
+        "select_warp_gates",
+        select_warp_gates,
+        lambda obs: obs.player_common.warp_gate_count > 0,
+    ),
+    Function.ui_func(
+        9, "select_larva", select_larva, lambda obs: obs.player_common.larva_count > 0
+    ),
+    Function.ui_func(10, "unload", unload, lambda obs: obs.ui_data.HasField("cargo")),
+    Function.ui_func(
+        11, "build_queue", build_queue, lambda obs: obs.ui_data.HasField("production")
+    ),
     # Everything below here is generated with gen_actions.py
     Function.ability(12, "Attack_screen", cmd_screen, 3674),
     Function.ability(13, "Attack_minimap", cmd_minimap, 3674),
@@ -756,7 +854,9 @@ _FUNCTIONS = [
     Function.ability(165, "Cancel_SporeCrawlerRoot_quick", cmd_quick, 1732, 3659),
     Function.ability(166, "Cancel_StarportAddOn_quick", cmd_quick, 517, 3659),
     Function.ability(167, "Cancel_StasisTrap_quick", cmd_quick, 2535, 3659),
-    Function.ability(546, "Cancel_VoidRayPrismaticAlignment_quick", cmd_quick, 3707, 3659),
+    Function.ability(
+        546, "Cancel_VoidRayPrismaticAlignment_quick", cmd_quick, 3707, 3659
+    ),
     Function.ability(168, "Cancel_Last_quick", cmd_quick, 3671),
     Function.ability(169, "Cancel_HangarQueue5_quick", cmd_quick, 1038, 3671),
     Function.ability(170, "Cancel_Queue1_quick", cmd_quick, 304, 3671),
@@ -764,7 +864,9 @@ _FUNCTIONS = [
     Function.ability(172, "Cancel_QueueAddOn_quick", cmd_quick, 312, 3671),
     Function.ability(173, "Cancel_QueueCancelToSelection_quick", cmd_quick, 308, 3671),
     Function.ability(174, "Cancel_QueuePassive_quick", cmd_quick, 1831, 3671),
-    Function.ability(175, "Cancel_QueuePassiveCancelToSelection_quick", cmd_quick, 1833, 3671),
+    Function.ability(
+        175, "Cancel_QueuePassiveCancelToSelection_quick", cmd_quick, 1833, 3671
+    ),
     Function.ability(176, "Effect_Abduct_screen", cmd_screen, 2067),
     Function.ability(177, "Effect_AdeptPhaseShift_screen", cmd_screen, 2544),
     Function.ability(547, "Effect_AdeptPhaseShift_minimap", cmd_minimap, 2544),
@@ -806,10 +908,16 @@ _FUNCTIONS = [
     Function.ability(557, "Effect_LockOn_autocast", autocast, 2350),
     Function.ability(207, "Effect_LocustSwoop_screen", cmd_screen, 2387),
     Function.ability(208, "Effect_MassRecall_screen", cmd_screen, 3686),
-    Function.ability(209, "Effect_MassRecall_Mothership_screen", cmd_screen, 2368, 3686),
-    Function.ability(210, "Effect_MassRecall_MothershipCore_screen", cmd_screen, 1974, 3686),
+    Function.ability(
+        209, "Effect_MassRecall_Mothership_screen", cmd_screen, 2368, 3686
+    ),
+    Function.ability(
+        210, "Effect_MassRecall_MothershipCore_screen", cmd_screen, 1974, 3686
+    ),
     Function.ability(529, "Effect_MassRecall_Nexus_screen", cmd_screen, 3757, 3686),
-    Function.ability(548, "Effect_MassRecall_StrategicRecall_screen", cmd_screen, 142, 3686),
+    Function.ability(
+        548, "Effect_MassRecall_StrategicRecall_screen", cmd_screen, 142, 3686
+    ),
     Function.ability(211, "Effect_MedivacIgniteAfterburners_quick", cmd_quick, 2116),
     Function.ability(212, "Effect_NeuralParasite_screen", cmd_screen, 249),
     Function.ability(213, "Effect_NukeCalldown_screen", cmd_screen, 1622),
@@ -1012,21 +1120,45 @@ _FUNCTIONS = [
     Function.ability(379, "Research_PhoenixAnionPulseCrystals_quick", cmd_quick, 46),
     Function.ability(380, "Research_PneumatizedCarapace_quick", cmd_quick, 1223),
     Function.ability(381, "Research_ProtossAirArmor_quick", cmd_quick, 3692),
-    Function.ability(382, "Research_ProtossAirArmorLevel1_quick", cmd_quick, 1565, 3692),
-    Function.ability(383, "Research_ProtossAirArmorLevel2_quick", cmd_quick, 1566, 3692),
-    Function.ability(384, "Research_ProtossAirArmorLevel3_quick", cmd_quick, 1567, 3692),
+    Function.ability(
+        382, "Research_ProtossAirArmorLevel1_quick", cmd_quick, 1565, 3692
+    ),
+    Function.ability(
+        383, "Research_ProtossAirArmorLevel2_quick", cmd_quick, 1566, 3692
+    ),
+    Function.ability(
+        384, "Research_ProtossAirArmorLevel3_quick", cmd_quick, 1567, 3692
+    ),
     Function.ability(385, "Research_ProtossAirWeapons_quick", cmd_quick, 3693),
-    Function.ability(386, "Research_ProtossAirWeaponsLevel1_quick", cmd_quick, 1562, 3693),
-    Function.ability(387, "Research_ProtossAirWeaponsLevel2_quick", cmd_quick, 1563, 3693),
-    Function.ability(388, "Research_ProtossAirWeaponsLevel3_quick", cmd_quick, 1564, 3693),
+    Function.ability(
+        386, "Research_ProtossAirWeaponsLevel1_quick", cmd_quick, 1562, 3693
+    ),
+    Function.ability(
+        387, "Research_ProtossAirWeaponsLevel2_quick", cmd_quick, 1563, 3693
+    ),
+    Function.ability(
+        388, "Research_ProtossAirWeaponsLevel3_quick", cmd_quick, 1564, 3693
+    ),
     Function.ability(389, "Research_ProtossGroundArmor_quick", cmd_quick, 3694),
-    Function.ability(390, "Research_ProtossGroundArmorLevel1_quick", cmd_quick, 1065, 3694),
-    Function.ability(391, "Research_ProtossGroundArmorLevel2_quick", cmd_quick, 1066, 3694),
-    Function.ability(392, "Research_ProtossGroundArmorLevel3_quick", cmd_quick, 1067, 3694),
+    Function.ability(
+        390, "Research_ProtossGroundArmorLevel1_quick", cmd_quick, 1065, 3694
+    ),
+    Function.ability(
+        391, "Research_ProtossGroundArmorLevel2_quick", cmd_quick, 1066, 3694
+    ),
+    Function.ability(
+        392, "Research_ProtossGroundArmorLevel3_quick", cmd_quick, 1067, 3694
+    ),
     Function.ability(393, "Research_ProtossGroundWeapons_quick", cmd_quick, 3695),
-    Function.ability(394, "Research_ProtossGroundWeaponsLevel1_quick", cmd_quick, 1062, 3695),
-    Function.ability(395, "Research_ProtossGroundWeaponsLevel2_quick", cmd_quick, 1063, 3695),
-    Function.ability(396, "Research_ProtossGroundWeaponsLevel3_quick", cmd_quick, 1064, 3695),
+    Function.ability(
+        394, "Research_ProtossGroundWeaponsLevel1_quick", cmd_quick, 1062, 3695
+    ),
+    Function.ability(
+        395, "Research_ProtossGroundWeaponsLevel2_quick", cmd_quick, 1063, 3695
+    ),
+    Function.ability(
+        396, "Research_ProtossGroundWeaponsLevel3_quick", cmd_quick, 1064, 3695
+    ),
     Function.ability(397, "Research_ProtossShields_quick", cmd_quick, 3696),
     Function.ability(398, "Research_ProtossShieldsLevel1_quick", cmd_quick, 1068, 3696),
     Function.ability(399, "Research_ProtossShieldsLevel2_quick", cmd_quick, 1069, 3696),
@@ -1038,26 +1170,58 @@ _FUNCTIONS = [
     Function.ability(373, "Research_SmartServos_quick", cmd_quick, 766),
     Function.ability(405, "Research_Stimpack_quick", cmd_quick, 730),
     Function.ability(406, "Research_TerranInfantryArmor_quick", cmd_quick, 3697),
-    Function.ability(407, "Research_TerranInfantryArmorLevel1_quick", cmd_quick, 656, 3697),
-    Function.ability(408, "Research_TerranInfantryArmorLevel2_quick", cmd_quick, 657, 3697),
-    Function.ability(409, "Research_TerranInfantryArmorLevel3_quick", cmd_quick, 658, 3697),
+    Function.ability(
+        407, "Research_TerranInfantryArmorLevel1_quick", cmd_quick, 656, 3697
+    ),
+    Function.ability(
+        408, "Research_TerranInfantryArmorLevel2_quick", cmd_quick, 657, 3697
+    ),
+    Function.ability(
+        409, "Research_TerranInfantryArmorLevel3_quick", cmd_quick, 658, 3697
+    ),
     Function.ability(410, "Research_TerranInfantryWeapons_quick", cmd_quick, 3698),
-    Function.ability(411, "Research_TerranInfantryWeaponsLevel1_quick", cmd_quick, 652, 3698),
-    Function.ability(412, "Research_TerranInfantryWeaponsLevel2_quick", cmd_quick, 653, 3698),
-    Function.ability(413, "Research_TerranInfantryWeaponsLevel3_quick", cmd_quick, 654, 3698),
+    Function.ability(
+        411, "Research_TerranInfantryWeaponsLevel1_quick", cmd_quick, 652, 3698
+    ),
+    Function.ability(
+        412, "Research_TerranInfantryWeaponsLevel2_quick", cmd_quick, 653, 3698
+    ),
+    Function.ability(
+        413, "Research_TerranInfantryWeaponsLevel3_quick", cmd_quick, 654, 3698
+    ),
     Function.ability(414, "Research_TerranShipWeapons_quick", cmd_quick, 3699),
-    Function.ability(415, "Research_TerranShipWeaponsLevel1_quick", cmd_quick, 861, 3699),
-    Function.ability(416, "Research_TerranShipWeaponsLevel2_quick", cmd_quick, 862, 3699),
-    Function.ability(417, "Research_TerranShipWeaponsLevel3_quick", cmd_quick, 863, 3699),
+    Function.ability(
+        415, "Research_TerranShipWeaponsLevel1_quick", cmd_quick, 861, 3699
+    ),
+    Function.ability(
+        416, "Research_TerranShipWeaponsLevel2_quick", cmd_quick, 862, 3699
+    ),
+    Function.ability(
+        417, "Research_TerranShipWeaponsLevel3_quick", cmd_quick, 863, 3699
+    ),
     Function.ability(418, "Research_TerranStructureArmorUpgrade_quick", cmd_quick, 651),
-    Function.ability(419, "Research_TerranVehicleAndShipPlating_quick", cmd_quick, 3700),
-    Function.ability(420, "Research_TerranVehicleAndShipPlatingLevel1_quick", cmd_quick, 864, 3700),
-    Function.ability(421, "Research_TerranVehicleAndShipPlatingLevel2_quick", cmd_quick, 865, 3700),
-    Function.ability(422, "Research_TerranVehicleAndShipPlatingLevel3_quick", cmd_quick, 866, 3700),
+    Function.ability(
+        419, "Research_TerranVehicleAndShipPlating_quick", cmd_quick, 3700
+    ),
+    Function.ability(
+        420, "Research_TerranVehicleAndShipPlatingLevel1_quick", cmd_quick, 864, 3700
+    ),
+    Function.ability(
+        421, "Research_TerranVehicleAndShipPlatingLevel2_quick", cmd_quick, 865, 3700
+    ),
+    Function.ability(
+        422, "Research_TerranVehicleAndShipPlatingLevel3_quick", cmd_quick, 866, 3700
+    ),
     Function.ability(423, "Research_TerranVehicleWeapons_quick", cmd_quick, 3701),
-    Function.ability(424, "Research_TerranVehicleWeaponsLevel1_quick", cmd_quick, 855, 3701),
-    Function.ability(425, "Research_TerranVehicleWeaponsLevel2_quick", cmd_quick, 856, 3701),
-    Function.ability(426, "Research_TerranVehicleWeaponsLevel3_quick", cmd_quick, 857, 3701),
+    Function.ability(
+        424, "Research_TerranVehicleWeaponsLevel1_quick", cmd_quick, 855, 3701
+    ),
+    Function.ability(
+        425, "Research_TerranVehicleWeaponsLevel2_quick", cmd_quick, 856, 3701
+    ),
+    Function.ability(
+        426, "Research_TerranVehicleWeaponsLevel3_quick", cmd_quick, 857, 3701
+    ),
     Function.ability(427, "Research_TunnelingClaws_quick", cmd_quick, 217),
     Function.ability(428, "Research_WarpGate_quick", cmd_quick, 1568),
     Function.ability(429, "Research_ZergFlyerArmor_quick", cmd_quick, 3702),
@@ -1065,21 +1229,45 @@ _FUNCTIONS = [
     Function.ability(431, "Research_ZergFlyerArmorLevel2_quick", cmd_quick, 1316, 3702),
     Function.ability(432, "Research_ZergFlyerArmorLevel3_quick", cmd_quick, 1317, 3702),
     Function.ability(433, "Research_ZergFlyerAttack_quick", cmd_quick, 3703),
-    Function.ability(434, "Research_ZergFlyerAttackLevel1_quick", cmd_quick, 1312, 3703),
-    Function.ability(435, "Research_ZergFlyerAttackLevel2_quick", cmd_quick, 1313, 3703),
-    Function.ability(436, "Research_ZergFlyerAttackLevel3_quick", cmd_quick, 1314, 3703),
+    Function.ability(
+        434, "Research_ZergFlyerAttackLevel1_quick", cmd_quick, 1312, 3703
+    ),
+    Function.ability(
+        435, "Research_ZergFlyerAttackLevel2_quick", cmd_quick, 1313, 3703
+    ),
+    Function.ability(
+        436, "Research_ZergFlyerAttackLevel3_quick", cmd_quick, 1314, 3703
+    ),
     Function.ability(437, "Research_ZergGroundArmor_quick", cmd_quick, 3704),
-    Function.ability(438, "Research_ZergGroundArmorLevel1_quick", cmd_quick, 1189, 3704),
-    Function.ability(439, "Research_ZergGroundArmorLevel2_quick", cmd_quick, 1190, 3704),
-    Function.ability(440, "Research_ZergGroundArmorLevel3_quick", cmd_quick, 1191, 3704),
+    Function.ability(
+        438, "Research_ZergGroundArmorLevel1_quick", cmd_quick, 1189, 3704
+    ),
+    Function.ability(
+        439, "Research_ZergGroundArmorLevel2_quick", cmd_quick, 1190, 3704
+    ),
+    Function.ability(
+        440, "Research_ZergGroundArmorLevel3_quick", cmd_quick, 1191, 3704
+    ),
     Function.ability(441, "Research_ZergMeleeWeapons_quick", cmd_quick, 3705),
-    Function.ability(442, "Research_ZergMeleeWeaponsLevel1_quick", cmd_quick, 1186, 3705),
-    Function.ability(443, "Research_ZergMeleeWeaponsLevel2_quick", cmd_quick, 1187, 3705),
-    Function.ability(444, "Research_ZergMeleeWeaponsLevel3_quick", cmd_quick, 1188, 3705),
+    Function.ability(
+        442, "Research_ZergMeleeWeaponsLevel1_quick", cmd_quick, 1186, 3705
+    ),
+    Function.ability(
+        443, "Research_ZergMeleeWeaponsLevel2_quick", cmd_quick, 1187, 3705
+    ),
+    Function.ability(
+        444, "Research_ZergMeleeWeaponsLevel3_quick", cmd_quick, 1188, 3705
+    ),
     Function.ability(445, "Research_ZergMissileWeapons_quick", cmd_quick, 3706),
-    Function.ability(446, "Research_ZergMissileWeaponsLevel1_quick", cmd_quick, 1192, 3706),
-    Function.ability(447, "Research_ZergMissileWeaponsLevel2_quick", cmd_quick, 1193, 3706),
-    Function.ability(448, "Research_ZergMissileWeaponsLevel3_quick", cmd_quick, 1194, 3706),
+    Function.ability(
+        446, "Research_ZergMissileWeaponsLevel1_quick", cmd_quick, 1192, 3706
+    ),
+    Function.ability(
+        447, "Research_ZergMissileWeaponsLevel2_quick", cmd_quick, 1193, 3706
+    ),
+    Function.ability(
+        448, "Research_ZergMissileWeaponsLevel3_quick", cmd_quick, 1194, 3706
+    ),
     Function.ability(449, "Research_ZerglingAdrenalGlands_quick", cmd_quick, 1252),
     Function.ability(450, "Research_ZerglingMetabolicBoost_quick", cmd_quick, 1253),
     Function.ability(451, "Smart_screen", cmd_screen, 1),
@@ -1164,15 +1352,16 @@ _FUNCTIONS = [
 # Create an IntEnum of the function names/ids so that printing the id will
 # show something useful.
 _Functions = enum.IntEnum(  # pylint: disable=invalid-name
-    "_Functions", {f.name: f.id for f in _FUNCTIONS})
+    "_Functions", {f.name: f.id for f in _FUNCTIONS}
+)
 _FUNCTIONS = [f._replace(id=_Functions(f.id)) for f in _FUNCTIONS]
 FUNCTIONS = Functions(_FUNCTIONS)
 
 # Some indexes to support features.py and action conversion.
 ABILITY_IDS = collections.defaultdict(set)  # {ability_id: {funcs}}
 for _func in FUNCTIONS:
-  if _func.ability_id >= 0:
-    ABILITY_IDS[_func.ability_id].add(_func)
+    if _func.ability_id >= 0:
+        ABILITY_IDS[_func.ability_id].add(_func)
 ABILITY_IDS = {k: frozenset(v) for k, v in ABILITY_IDS.items()}
 FUNCTIONS_AVAILABLE = {f.id: f for f in FUNCTIONS if f.avail_fn}
 
@@ -1191,8 +1380,12 @@ _RAW_FUNCTIONS = [
     Function.raw_ability(540, "Attack_Battlecruiser_unit", raw_cmd_unit, 3771, 3674),
     Function.raw_ability(8, "Attack_Redirect_pt", raw_cmd_pt, 1682, 3674),
     Function.raw_ability(9, "Attack_Redirect_unit", raw_cmd_unit, 1682, 3674),
-    Function.raw_ability(88, "Behavior_BuildingAttackOff_quick", raw_cmd, 2082),  # wrong / baneling
-    Function.raw_ability(87, "Behavior_BuildingAttackOn_quick", raw_cmd, 2081),  # wrong / baneling
+    Function.raw_ability(
+        88, "Behavior_BuildingAttackOff_quick", raw_cmd, 2082
+    ),  # wrong / baneling
+    Function.raw_ability(
+        87, "Behavior_BuildingAttackOn_quick", raw_cmd, 2081
+    ),  # wrong / baneling
     Function.raw_ability(169, "Behavior_CloakOff_quick", raw_cmd, 3677),
     Function.raw_ability(170, "Behavior_CloakOff_Banshee_quick", raw_cmd, 393, 3677),
     Function.raw_ability(171, "Behavior_CloakOff_Ghost_quick", raw_cmd, 383, 3677),
@@ -1297,7 +1490,9 @@ _RAW_FUNCTIONS = [
     Function.raw_ability(252, "BurrowUp_Hydralisk_autocast", raw_autocast, 1384, 3662),
     Function.raw_ability(251, "BurrowUp_Hydralisk_quick", raw_cmd, 1384, 3662),
     Function.raw_ability(253, "BurrowUp_Infestor_quick", raw_cmd, 1446, 3662),
-    Function.raw_ability(255, "BurrowUp_InfestorTerran_autocast", raw_autocast, 1396, 3662),
+    Function.raw_ability(
+        255, "BurrowUp_InfestorTerran_autocast", raw_autocast, 1396, 3662
+    ),
     Function.raw_ability(254, "BurrowUp_InfestorTerran_quick", raw_cmd, 1396, 3662),
     Function.raw_ability(256, "BurrowUp_Lurker_quick", raw_cmd, 2110, 3662),
     Function.raw_ability(258, "BurrowUp_Queen_autocast", raw_autocast, 1435, 3662),
@@ -1331,24 +1526,36 @@ _RAW_FUNCTIONS = [
     Function.raw_ability(278, "Cancel_MorphLurker_quick", raw_cmd, 2333, 3659),
     Function.raw_ability(280, "Cancel_MorphMothership_quick", raw_cmd, 1848, 3659),
     Function.raw_ability(281, "Cancel_MorphOrbital_quick", raw_cmd, 1517, 3659),
-    Function.raw_ability(282, "Cancel_MorphOverlordTransport_quick", raw_cmd, 2709, 3659),
+    Function.raw_ability(
+        282, "Cancel_MorphOverlordTransport_quick", raw_cmd, 2709, 3659
+    ),
     Function.raw_ability(283, "Cancel_MorphOverseer_quick", raw_cmd, 1449, 3659),
-    Function.raw_ability(284, "Cancel_MorphPlanetaryFortress_quick", raw_cmd, 1451, 3659),
+    Function.raw_ability(
+        284, "Cancel_MorphPlanetaryFortress_quick", raw_cmd, 1451, 3659
+    ),
     Function.raw_ability(285, "Cancel_MorphRavager_quick", raw_cmd, 2331, 3659),
-    Function.raw_ability(286, "Cancel_MorphThorExplosiveMode_quick", raw_cmd, 2365, 3659),
+    Function.raw_ability(
+        286, "Cancel_MorphThorExplosiveMode_quick", raw_cmd, 2365, 3659
+    ),
     Function.raw_ability(287, "Cancel_NeuralParasite_quick", raw_cmd, 250, 3659),
     Function.raw_ability(288, "Cancel_Nuke_quick", raw_cmd, 1623, 3659),
     Function.raw_ability(130, "Cancel_Queue1_quick", raw_cmd, 304, 3671),
     Function.raw_ability(131, "Cancel_Queue5_quick", raw_cmd, 306, 3671),
     Function.raw_ability(289, "Cancel_QueueAddOn_quick", raw_cmd, 312, 3671),
-    Function.raw_ability(132, "Cancel_QueueCancelToSelection_quick", raw_cmd, 308, 3671),
-    Function.raw_ability(134, "Cancel_QueuePassiveCancelToSelection_quick", raw_cmd, 1833, 3671),
+    Function.raw_ability(
+        132, "Cancel_QueueCancelToSelection_quick", raw_cmd, 308, 3671
+    ),
+    Function.raw_ability(
+        134, "Cancel_QueuePassiveCancelToSelection_quick", raw_cmd, 1833, 3671
+    ),
     Function.raw_ability(133, "Cancel_QueuePassive_quick", raw_cmd, 1831, 3671),
     Function.raw_ability(290, "Cancel_SpineCrawlerRoot_quick", raw_cmd, 1730, 3659),
     Function.raw_ability(291, "Cancel_SporeCrawlerRoot_quick", raw_cmd, 1732, 3659),
     Function.raw_ability(292, "Cancel_StarportAddOn_quick", raw_cmd, 517, 3659),
     Function.raw_ability(127, "Cancel_StasisTrap_quick", raw_cmd, 2535, 3659),
-    Function.raw_ability(128, "Cancel_VoidRayPrismaticAlignment_quick", raw_cmd, 3707, 3659),
+    Function.raw_ability(
+        128, "Cancel_VoidRayPrismaticAlignment_quick", raw_cmd, 3707, 3659
+    ),
     Function.raw_ability(293, "Effect_Abduct_unit", raw_cmd_unit, 2067),
     Function.raw_ability(96, "Effect_AdeptPhaseShift_pt", raw_cmd_pt, 2544),
     Function.raw_ability(294, "Effect_AntiArmorMissile_unit", raw_cmd_unit, 3753),
@@ -1363,8 +1570,12 @@ _RAW_FUNCTIONS = [
     Function.raw_ability(302, "Effect_Charge_autocast", raw_autocast, 1819),
     Function.raw_ability(300, "Effect_Charge_pt", raw_cmd_pt, 1819),
     Function.raw_ability(301, "Effect_Charge_unit", raw_cmd_unit, 1819),
-    Function.raw_ability(122, "Effect_ChronoBoostEnergyCost_unit", raw_cmd_unit, 3755),  # new 4.0?
-    Function.raw_ability(33, "Effect_ChronoBoost_unit", raw_cmd_unit, 261),  # wrong / old?
+    Function.raw_ability(
+        122, "Effect_ChronoBoostEnergyCost_unit", raw_cmd_unit, 3755
+    ),  # new 4.0?
+    Function.raw_ability(
+        33, "Effect_ChronoBoost_unit", raw_cmd_unit, 261
+    ),  # wrong / old?
     Function.raw_ability(303, "Effect_Contaminate_unit", raw_cmd_unit, 1825),
     Function.raw_ability(304, "Effect_CorrosiveBile_pt", raw_cmd_pt, 2338),
     Function.raw_ability(305, "Effect_EMP_pt", raw_cmd_pt, 1628),
@@ -1390,9 +1601,13 @@ _RAW_FUNCTIONS = [
     Function.raw_ability(541, "Effect_LockOn_autocast", raw_autocast, 2350),
     Function.raw_ability(319, "Effect_LocustSwoop_pt", raw_cmd_pt, 2387),
     Function.raw_ability(110, "Effect_MassRecall_pt", raw_cmd_pt, 3686),
-    Function.raw_ability(136, "Effect_MassRecall_Mothership_pt", raw_cmd_pt, 2368, 3686),
+    Function.raw_ability(
+        136, "Effect_MassRecall_Mothership_pt", raw_cmd_pt, 2368, 3686
+    ),
     Function.raw_ability(162, "Effect_MassRecall_Nexus_pt", raw_cmd_pt, 3757, 3686),
-    Function.raw_ability(137, "Effect_MassRecall_StrategicRecall_pt", raw_cmd_pt, 142, 3686),
+    Function.raw_ability(
+        137, "Effect_MassRecall_StrategicRecall_pt", raw_cmd_pt, 142, 3686
+    ),
     Function.raw_ability(320, "Effect_MedivacIgniteAfterburners_quick", raw_cmd, 2116),
     Function.raw_ability(321, "Effect_NeuralParasite_unit", raw_cmd_unit, 249),
     Function.raw_ability(322, "Effect_NukeCalldown_pt", raw_cmd_pt, 1622),
@@ -1405,8 +1620,12 @@ _RAW_FUNCTIONS = [
     Function.raw_ability(109, "Effect_Repair_unit", raw_cmd_unit, 3685),
     Function.raw_ability(326, "Effect_Repair_Mule_autocast", raw_autocast, 78, 3685),
     Function.raw_ability(325, "Effect_Repair_Mule_unit", raw_cmd_unit, 78, 3685),
-    Function.raw_ability(328, "Effect_Repair_RepairDrone_autocast", raw_autocast, 3751, 3685),
-    Function.raw_ability(327, "Effect_Repair_RepairDrone_unit", raw_cmd_unit, 3751, 3685),
+    Function.raw_ability(
+        328, "Effect_Repair_RepairDrone_autocast", raw_autocast, 3751, 3685
+    ),
+    Function.raw_ability(
+        327, "Effect_Repair_RepairDrone_unit", raw_cmd_unit, 3751, 3685
+    ),
     Function.raw_ability(330, "Effect_Repair_SCV_autocast", raw_autocast, 316, 3685),
     Function.raw_ability(329, "Effect_Repair_SCV_unit", raw_cmd_unit, 316, 3685),
     Function.raw_ability(331, "Effect_Restore_autocast", raw_autocast, 3765),
@@ -1423,7 +1642,9 @@ _RAW_FUNCTIONS = [
     Function.raw_ability(340, "Effect_Spray_Zerg_pt", raw_cmd_pt, 28, 3684),
     Function.raw_ability(341, "Effect_Stim_quick", raw_cmd, 3675),
     Function.raw_ability(342, "Effect_Stim_Marauder_quick", raw_cmd, 253, 3675),
-    Function.raw_ability(343, "Effect_Stim_Marauder_Redirect_quick", raw_cmd, 1684, 3675),
+    Function.raw_ability(
+        343, "Effect_Stim_Marauder_Redirect_quick", raw_cmd, 1684, 3675
+    ),
     Function.raw_ability(344, "Effect_Stim_Marine_quick", raw_cmd, 380, 3675),
     Function.raw_ability(345, "Effect_Stim_Marine_Redirect_quick", raw_cmd, 1683, 3675),
     Function.raw_ability(346, "Effect_SupplyDrop_unit", raw_cmd_unit, 255),
@@ -1588,76 +1809,172 @@ _RAW_FUNCTIONS = [
     Function.raw_ability(446, "Research_PersonalCloaking_quick", raw_cmd, 820),
     Function.raw_ability(19, "Research_PhoenixAnionPulseCrystals_quick", raw_cmd, 46),
     Function.raw_ability(447, "Research_PneumatizedCarapace_quick", raw_cmd, 1223),
-    Function.raw_ability(139, "Research_ProtossAirArmorLevel1_quick", raw_cmd, 1565, 3692),
-    Function.raw_ability(140, "Research_ProtossAirArmorLevel2_quick", raw_cmd, 1566, 3692),
-    Function.raw_ability(141, "Research_ProtossAirArmorLevel3_quick", raw_cmd, 1567, 3692),
+    Function.raw_ability(
+        139, "Research_ProtossAirArmorLevel1_quick", raw_cmd, 1565, 3692
+    ),
+    Function.raw_ability(
+        140, "Research_ProtossAirArmorLevel2_quick", raw_cmd, 1566, 3692
+    ),
+    Function.raw_ability(
+        141, "Research_ProtossAirArmorLevel3_quick", raw_cmd, 1567, 3692
+    ),
     Function.raw_ability(116, "Research_ProtossAirArmor_quick", raw_cmd, 3692),
-    Function.raw_ability(142, "Research_ProtossAirWeaponsLevel1_quick", raw_cmd, 1562, 3693),
-    Function.raw_ability(143, "Research_ProtossAirWeaponsLevel2_quick", raw_cmd, 1563, 3693),
-    Function.raw_ability(144, "Research_ProtossAirWeaponsLevel3_quick", raw_cmd, 1564, 3693),
+    Function.raw_ability(
+        142, "Research_ProtossAirWeaponsLevel1_quick", raw_cmd, 1562, 3693
+    ),
+    Function.raw_ability(
+        143, "Research_ProtossAirWeaponsLevel2_quick", raw_cmd, 1563, 3693
+    ),
+    Function.raw_ability(
+        144, "Research_ProtossAirWeaponsLevel3_quick", raw_cmd, 1564, 3693
+    ),
     Function.raw_ability(117, "Research_ProtossAirWeapons_quick", raw_cmd, 3693),
-    Function.raw_ability(145, "Research_ProtossGroundArmorLevel1_quick", raw_cmd, 1065, 3694),
-    Function.raw_ability(146, "Research_ProtossGroundArmorLevel2_quick", raw_cmd, 1066, 3694),
-    Function.raw_ability(147, "Research_ProtossGroundArmorLevel3_quick", raw_cmd, 1067, 3694),
+    Function.raw_ability(
+        145, "Research_ProtossGroundArmorLevel1_quick", raw_cmd, 1065, 3694
+    ),
+    Function.raw_ability(
+        146, "Research_ProtossGroundArmorLevel2_quick", raw_cmd, 1066, 3694
+    ),
+    Function.raw_ability(
+        147, "Research_ProtossGroundArmorLevel3_quick", raw_cmd, 1067, 3694
+    ),
     Function.raw_ability(118, "Research_ProtossGroundArmor_quick", raw_cmd, 3694),
-    Function.raw_ability(148, "Research_ProtossGroundWeaponsLevel1_quick", raw_cmd, 1062, 3695),
-    Function.raw_ability(149, "Research_ProtossGroundWeaponsLevel2_quick", raw_cmd, 1063, 3695),
-    Function.raw_ability(150, "Research_ProtossGroundWeaponsLevel3_quick", raw_cmd, 1064, 3695),
+    Function.raw_ability(
+        148, "Research_ProtossGroundWeaponsLevel1_quick", raw_cmd, 1062, 3695
+    ),
+    Function.raw_ability(
+        149, "Research_ProtossGroundWeaponsLevel2_quick", raw_cmd, 1063, 3695
+    ),
+    Function.raw_ability(
+        150, "Research_ProtossGroundWeaponsLevel3_quick", raw_cmd, 1064, 3695
+    ),
     Function.raw_ability(119, "Research_ProtossGroundWeapons_quick", raw_cmd, 3695),
-    Function.raw_ability(151, "Research_ProtossShieldsLevel1_quick", raw_cmd, 1068, 3696),
-    Function.raw_ability(152, "Research_ProtossShieldsLevel2_quick", raw_cmd, 1069, 3696),
-    Function.raw_ability(153, "Research_ProtossShieldsLevel3_quick", raw_cmd, 1070, 3696),
+    Function.raw_ability(
+        151, "Research_ProtossShieldsLevel1_quick", raw_cmd, 1068, 3696
+    ),
+    Function.raw_ability(
+        152, "Research_ProtossShieldsLevel2_quick", raw_cmd, 1069, 3696
+    ),
+    Function.raw_ability(
+        153, "Research_ProtossShieldsLevel3_quick", raw_cmd, 1070, 3696
+    ),
     Function.raw_ability(120, "Research_ProtossShields_quick", raw_cmd, 3696),
     Function.raw_ability(70, "Research_PsiStorm_quick", raw_cmd, 1126),
     Function.raw_ability(448, "Research_RavenCorvidReactor_quick", raw_cmd, 793),
-    Function.raw_ability(449, "Research_RavenRecalibratedExplosives_quick", raw_cmd, 803),
+    Function.raw_ability(
+        449, "Research_RavenRecalibratedExplosives_quick", raw_cmd, 803
+    ),
     Function.raw_ability(97, "Research_ShadowStrike_quick", raw_cmd, 2720),
     Function.raw_ability(450, "Research_SmartServos_quick", raw_cmd, 766),
     Function.raw_ability(451, "Research_Stimpack_quick", raw_cmd, 730),
-    Function.raw_ability(453, "Research_TerranInfantryArmorLevel1_quick", raw_cmd, 656, 3697),
-    Function.raw_ability(454, "Research_TerranInfantryArmorLevel2_quick", raw_cmd, 657, 3697),
-    Function.raw_ability(455, "Research_TerranInfantryArmorLevel3_quick", raw_cmd, 658, 3697),
+    Function.raw_ability(
+        453, "Research_TerranInfantryArmorLevel1_quick", raw_cmd, 656, 3697
+    ),
+    Function.raw_ability(
+        454, "Research_TerranInfantryArmorLevel2_quick", raw_cmd, 657, 3697
+    ),
+    Function.raw_ability(
+        455, "Research_TerranInfantryArmorLevel3_quick", raw_cmd, 658, 3697
+    ),
     Function.raw_ability(452, "Research_TerranInfantryArmor_quick", raw_cmd, 3697),
-    Function.raw_ability(457, "Research_TerranInfantryWeaponsLevel1_quick", raw_cmd, 652, 3698),
-    Function.raw_ability(458, "Research_TerranInfantryWeaponsLevel2_quick", raw_cmd, 653, 3698),
-    Function.raw_ability(459, "Research_TerranInfantryWeaponsLevel3_quick", raw_cmd, 654, 3698),
+    Function.raw_ability(
+        457, "Research_TerranInfantryWeaponsLevel1_quick", raw_cmd, 652, 3698
+    ),
+    Function.raw_ability(
+        458, "Research_TerranInfantryWeaponsLevel2_quick", raw_cmd, 653, 3698
+    ),
+    Function.raw_ability(
+        459, "Research_TerranInfantryWeaponsLevel3_quick", raw_cmd, 654, 3698
+    ),
     Function.raw_ability(456, "Research_TerranInfantryWeapons_quick", raw_cmd, 3698),
-    Function.raw_ability(461, "Research_TerranShipWeaponsLevel1_quick", raw_cmd, 861, 3699),
-    Function.raw_ability(462, "Research_TerranShipWeaponsLevel2_quick", raw_cmd, 862, 3699),
-    Function.raw_ability(463, "Research_TerranShipWeaponsLevel3_quick", raw_cmd, 863, 3699),
+    Function.raw_ability(
+        461, "Research_TerranShipWeaponsLevel1_quick", raw_cmd, 861, 3699
+    ),
+    Function.raw_ability(
+        462, "Research_TerranShipWeaponsLevel2_quick", raw_cmd, 862, 3699
+    ),
+    Function.raw_ability(
+        463, "Research_TerranShipWeaponsLevel3_quick", raw_cmd, 863, 3699
+    ),
     Function.raw_ability(460, "Research_TerranShipWeapons_quick", raw_cmd, 3699),
-    Function.raw_ability(464, "Research_TerranStructureArmorUpgrade_quick", raw_cmd, 651),
-    Function.raw_ability(466, "Research_TerranVehicleAndShipPlatingLevel1_quick", raw_cmd, 864, 3700),
-    Function.raw_ability(467, "Research_TerranVehicleAndShipPlatingLevel2_quick", raw_cmd, 865, 3700),
-    Function.raw_ability(468, "Research_TerranVehicleAndShipPlatingLevel3_quick", raw_cmd, 866, 3700),
-    Function.raw_ability(465, "Research_TerranVehicleAndShipPlating_quick", raw_cmd, 3700),
-    Function.raw_ability(470, "Research_TerranVehicleWeaponsLevel1_quick", raw_cmd, 855, 3701),
-    Function.raw_ability(471, "Research_TerranVehicleWeaponsLevel2_quick", raw_cmd, 856, 3701),
-    Function.raw_ability(472, "Research_TerranVehicleWeaponsLevel3_quick", raw_cmd, 857, 3701),
+    Function.raw_ability(
+        464, "Research_TerranStructureArmorUpgrade_quick", raw_cmd, 651
+    ),
+    Function.raw_ability(
+        466, "Research_TerranVehicleAndShipPlatingLevel1_quick", raw_cmd, 864, 3700
+    ),
+    Function.raw_ability(
+        467, "Research_TerranVehicleAndShipPlatingLevel2_quick", raw_cmd, 865, 3700
+    ),
+    Function.raw_ability(
+        468, "Research_TerranVehicleAndShipPlatingLevel3_quick", raw_cmd, 866, 3700
+    ),
+    Function.raw_ability(
+        465, "Research_TerranVehicleAndShipPlating_quick", raw_cmd, 3700
+    ),
+    Function.raw_ability(
+        470, "Research_TerranVehicleWeaponsLevel1_quick", raw_cmd, 855, 3701
+    ),
+    Function.raw_ability(
+        471, "Research_TerranVehicleWeaponsLevel2_quick", raw_cmd, 856, 3701
+    ),
+    Function.raw_ability(
+        472, "Research_TerranVehicleWeaponsLevel3_quick", raw_cmd, 857, 3701
+    ),
     Function.raw_ability(469, "Research_TerranVehicleWeapons_quick", raw_cmd, 3701),
     Function.raw_ability(473, "Research_TunnelingClaws_quick", raw_cmd, 217),
     Function.raw_ability(82, "Research_WarpGate_quick", raw_cmd, 1568),
-    Function.raw_ability(475, "Research_ZergFlyerArmorLevel1_quick", raw_cmd, 1315, 3702),
-    Function.raw_ability(476, "Research_ZergFlyerArmorLevel2_quick", raw_cmd, 1316, 3702),
-    Function.raw_ability(477, "Research_ZergFlyerArmorLevel3_quick", raw_cmd, 1317, 3702),
+    Function.raw_ability(
+        475, "Research_ZergFlyerArmorLevel1_quick", raw_cmd, 1315, 3702
+    ),
+    Function.raw_ability(
+        476, "Research_ZergFlyerArmorLevel2_quick", raw_cmd, 1316, 3702
+    ),
+    Function.raw_ability(
+        477, "Research_ZergFlyerArmorLevel3_quick", raw_cmd, 1317, 3702
+    ),
     Function.raw_ability(474, "Research_ZergFlyerArmor_quick", raw_cmd, 3702),
-    Function.raw_ability(479, "Research_ZergFlyerAttackLevel1_quick", raw_cmd, 1312, 3703),
-    Function.raw_ability(480, "Research_ZergFlyerAttackLevel2_quick", raw_cmd, 1313, 3703),
-    Function.raw_ability(481, "Research_ZergFlyerAttackLevel3_quick", raw_cmd, 1314, 3703),
+    Function.raw_ability(
+        479, "Research_ZergFlyerAttackLevel1_quick", raw_cmd, 1312, 3703
+    ),
+    Function.raw_ability(
+        480, "Research_ZergFlyerAttackLevel2_quick", raw_cmd, 1313, 3703
+    ),
+    Function.raw_ability(
+        481, "Research_ZergFlyerAttackLevel3_quick", raw_cmd, 1314, 3703
+    ),
     Function.raw_ability(478, "Research_ZergFlyerAttack_quick", raw_cmd, 3703),
-    Function.raw_ability(483, "Research_ZergGroundArmorLevel1_quick", raw_cmd, 1189, 3704),
-    Function.raw_ability(484, "Research_ZergGroundArmorLevel2_quick", raw_cmd, 1190, 3704),
-    Function.raw_ability(485, "Research_ZergGroundArmorLevel3_quick", raw_cmd, 1191, 3704),
+    Function.raw_ability(
+        483, "Research_ZergGroundArmorLevel1_quick", raw_cmd, 1189, 3704
+    ),
+    Function.raw_ability(
+        484, "Research_ZergGroundArmorLevel2_quick", raw_cmd, 1190, 3704
+    ),
+    Function.raw_ability(
+        485, "Research_ZergGroundArmorLevel3_quick", raw_cmd, 1191, 3704
+    ),
     Function.raw_ability(482, "Research_ZergGroundArmor_quick", raw_cmd, 3704),
     Function.raw_ability(494, "Research_ZerglingAdrenalGlands_quick", raw_cmd, 1252),
     Function.raw_ability(495, "Research_ZerglingMetabolicBoost_quick", raw_cmd, 1253),
-    Function.raw_ability(487, "Research_ZergMeleeWeaponsLevel1_quick", raw_cmd, 1186, 3705),
-    Function.raw_ability(488, "Research_ZergMeleeWeaponsLevel2_quick", raw_cmd, 1187, 3705),
-    Function.raw_ability(489, "Research_ZergMeleeWeaponsLevel3_quick", raw_cmd, 1188, 3705),
+    Function.raw_ability(
+        487, "Research_ZergMeleeWeaponsLevel1_quick", raw_cmd, 1186, 3705
+    ),
+    Function.raw_ability(
+        488, "Research_ZergMeleeWeaponsLevel2_quick", raw_cmd, 1187, 3705
+    ),
+    Function.raw_ability(
+        489, "Research_ZergMeleeWeaponsLevel3_quick", raw_cmd, 1188, 3705
+    ),
     Function.raw_ability(486, "Research_ZergMeleeWeapons_quick", raw_cmd, 3705),
-    Function.raw_ability(491, "Research_ZergMissileWeaponsLevel1_quick", raw_cmd, 1192, 3706),
-    Function.raw_ability(492, "Research_ZergMissileWeaponsLevel2_quick", raw_cmd, 1193, 3706),
-    Function.raw_ability(493, "Research_ZergMissileWeaponsLevel3_quick", raw_cmd, 1194, 3706),
+    Function.raw_ability(
+        491, "Research_ZergMissileWeaponsLevel1_quick", raw_cmd, 1192, 3706
+    ),
+    Function.raw_ability(
+        492, "Research_ZergMissileWeaponsLevel2_quick", raw_cmd, 1193, 3706
+    ),
+    Function.raw_ability(
+        493, "Research_ZergMissileWeaponsLevel3_quick", raw_cmd, 1194, 3706
+    ),
     Function.raw_ability(490, "Research_ZergMissileWeapons_quick", raw_cmd, 3706),
     Function.raw_ability(10, "Scan_Move_pt", raw_cmd_pt, 19, 3674),
     Function.raw_ability(11, "Scan_Move_unit", raw_cmd_unit, 19, 3674),
@@ -1749,116 +2066,124 @@ _RAW_FUNCTIONS = [
 # Create an IntEnum of the function names/ids so that printing the id will
 # show something useful.
 _Raw_Functions = enum.IntEnum(  # pylint: disable=invalid-name
-    "_Raw_Functions", {f.name: f.id for f in _RAW_FUNCTIONS})
+    "_Raw_Functions", {f.name: f.id for f in _RAW_FUNCTIONS}
+)
 _RAW_FUNCTIONS = [f._replace(id=_Raw_Functions(f.id)) for f in _RAW_FUNCTIONS]
 RAW_FUNCTIONS = Functions(_RAW_FUNCTIONS)
 
 # Some indexes to support features.py and action conversion.
 RAW_ABILITY_IDS = collections.defaultdict(set)  # {ability_id: {funcs}}
 for _func in RAW_FUNCTIONS:
-  if _func.ability_id >= 0:
-    RAW_ABILITY_IDS[_func.ability_id].add(_func)
+    if _func.ability_id >= 0:
+        RAW_ABILITY_IDS[_func.ability_id].add(_func)
 RAW_ABILITY_IDS = {k: frozenset(v) for k, v in RAW_ABILITY_IDS.items()}
 RAW_FUNCTIONS_AVAILABLE = {f.id: f for f in RAW_FUNCTIONS if f.avail_fn}
-RAW_ABILITY_ID_TO_FUNC_ID = {k: min(f.id for f in v)  # pylint: disable=g-complex-comprehension
-                             for k, v in RAW_ABILITY_IDS.items()}
+RAW_ABILITY_ID_TO_FUNC_ID = {
+    k: min(f.id for f in v)  # pylint: disable=g-complex-comprehension
+    for k, v in RAW_ABILITY_IDS.items()
+}
 
 
-class FunctionCall(collections.namedtuple(
-    "FunctionCall", ["function", "arguments"])):
-  """Represents a function call action.
+class FunctionCall(collections.namedtuple("FunctionCall", ["function", "arguments"])):
+    """Represents a function call action.
 
-  Attributes:
-    function: Store the function id, eg 2 for select_point.
-    arguments: The list of arguments for that function, each being a list of
-        ints. For select_point this could be: [[0], [23, 38]].
-  """
-  __slots__ = ()
-
-  @classmethod
-  def init_with_validation(cls, function, arguments, raw=False):
-    """Return a `FunctionCall` given some validation for the function and args.
-
-    Args:
-      function: A function name or id, to be converted into a function id enum.
-      arguments: An iterable of function arguments. Arguments that are enum
-          types can be passed by name. Arguments that only take one value (ie
-          not a point) don't need to be wrapped in a list.
-      raw: Whether this is a raw function call.
-
-    Returns:
-      A new `FunctionCall` instance.
-
-    Raises:
-      KeyError: if the enum name doesn't exist.
-      ValueError: if the enum id doesn't exist.
+    Attributes:
+      function: Store the function id, eg 2 for select_point.
+      arguments: The list of arguments for that function, each being a list of
+          ints. For select_point this could be: [[0], [23, 38]].
     """
-    func = RAW_FUNCTIONS[function] if raw else FUNCTIONS[function]
-    args = []
-    for arg, arg_type in zip(arguments, func.args):
-      arg = numpy_to_python(arg)
-      if arg_type.values:  # Allow enum values by name or int.
-        if isinstance(arg, str):
-          try:
-            args.append([arg_type.values[arg]])
-          except KeyError:
-            raise KeyError("Unknown argument value: %s, valid values: %s" % (
-                arg, [v.name for v in arg_type.values]))
-        else:
-          if isinstance(arg, list):
-            arg = arg[0]
-          try:
-            args.append([arg_type.values(arg)])
-          except ValueError:
-            raise ValueError("Unknown argument value: %s, valid values: %s" % (
-                arg, list(arg_type.values)))
-      elif isinstance(arg, int):  # Allow bare ints.
-        args.append([arg])
-      elif isinstance(arg, list):
-        args.append(arg)
-      else:
-        raise ValueError(
-            "Unknown argument value type: %s, expected int or list of ints, or "
-            "their numpy equivalents. Value: %s" % (type(arg), arg))
-    return cls(func.id, args)
 
-  @classmethod
-  def all_arguments(cls, function, arguments, raw=False):
-    """Helper function for creating `FunctionCall`s with `Arguments`.
+    __slots__ = ()
 
-    Args:
-      function: The value to store for the action function.
-      arguments: The values to store for the arguments of the action. Can either
-        be an `Arguments` object, a `dict`, or an iterable. If a `dict` or an
-        iterable is provided, the values will be unpacked into an `Arguments`
-        object.
-      raw: Whether this is a raw function call.
+    @classmethod
+    def init_with_validation(cls, function, arguments, raw=False):
+        """Return a `FunctionCall` given some validation for the function and args.
 
-    Returns:
-      A new `FunctionCall` instance.
+        Args:
+          function: A function name or id, to be converted into a function id enum.
+          arguments: An iterable of function arguments. Arguments that are enum
+              types can be passed by name. Arguments that only take one value (ie
+              not a point) don't need to be wrapped in a list.
+          raw: Whether this is a raw function call.
+
+        Returns:
+          A new `FunctionCall` instance.
+
+        Raises:
+          KeyError: if the enum name doesn't exist.
+          ValueError: if the enum id doesn't exist.
+        """
+        func = RAW_FUNCTIONS[function] if raw else FUNCTIONS[function]
+        args = []
+        for arg, arg_type in zip(arguments, func.args):
+            arg = numpy_to_python(arg)
+            if arg_type.values:  # Allow enum values by name or int.
+                if isinstance(arg, str):
+                    try:
+                        args.append([arg_type.values[arg]])
+                    except KeyError:
+                        raise KeyError(
+                            "Unknown argument value: %s, valid values: %s"
+                            % (arg, [v.name for v in arg_type.values])
+                        )
+                else:
+                    if isinstance(arg, list):
+                        arg = arg[0]
+                    try:
+                        args.append([arg_type.values(arg)])
+                    except ValueError:
+                        raise ValueError(
+                            "Unknown argument value: %s, valid values: %s"
+                            % (arg, list(arg_type.values))
+                        )
+            elif isinstance(arg, int):  # Allow bare ints.
+                args.append([arg])
+            elif isinstance(arg, list):
+                args.append(arg)
+            else:
+                raise ValueError(
+                    "Unknown argument value type: %s, expected int or list of ints, or "
+                    "their numpy equivalents. Value: %s" % (type(arg), arg)
+                )
+        return cls(func.id, args)
+
+    @classmethod
+    def all_arguments(cls, function, arguments, raw=False):
+        """Helper function for creating `FunctionCall`s with `Arguments`.
+
+        Args:
+          function: The value to store for the action function.
+          arguments: The values to store for the arguments of the action. Can either
+            be an `Arguments` object, a `dict`, or an iterable. If a `dict` or an
+            iterable is provided, the values will be unpacked into an `Arguments`
+            object.
+          raw: Whether this is a raw function call.
+
+        Returns:
+          A new `FunctionCall` instance.
+        """
+        args_type = RawArguments if raw else Arguments
+
+        if isinstance(arguments, dict):
+            arguments = args_type(**arguments)
+        elif not isinstance(arguments, args_type):
+            arguments = args_type(*arguments)
+        return cls(function, arguments)
+
+    def __reduce__(self):
+        return self.__class__, tuple(self)
+
+
+class ValidActions(collections.namedtuple("ValidActions", ["types", "functions"])):
+    """The set of types and functions that are valid for an agent to use.
+
+    Attributes:
+      types: A namedtuple of the types that the functions require. Unlike TYPES
+          above, this includes the sizes for screen and minimap.
+      functions: A namedtuple of all the functions.
     """
-    args_type = RawArguments if raw else Arguments
 
-    if isinstance(arguments, dict):
-      arguments = args_type(**arguments)
-    elif not isinstance(arguments, args_type):
-      arguments = args_type(*arguments)
-    return cls(function, arguments)
+    __slots__ = ()
 
-  def __reduce__(self):
-    return self.__class__, tuple(self)
-
-
-class ValidActions(collections.namedtuple(
-    "ValidActions", ["types", "functions"])):
-  """The set of types and functions that are valid for an agent to use.
-
-  Attributes:
-    types: A namedtuple of the types that the functions require. Unlike TYPES
-        above, this includes the sizes for screen and minimap.
-    functions: A namedtuple of all the functions.
-  """
-  __slots__ = ()
-
-  def __reduce__(self):
-    return self.__class__, tuple(self)
+    def __reduce__(self):
+        return self.__class__, tuple(self)

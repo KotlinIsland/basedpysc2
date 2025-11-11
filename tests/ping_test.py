@@ -22,19 +22,18 @@ from tests import utils
 
 
 class TestPing(utils.TestCase):
+    def test_ping(self):
+        count = 100
 
-  def test_ping(self):
-    count = 100
+        with run_configs.get().start(want_rgb=False) as controller:
+            with stopwatch.sw("first"):
+                controller.ping()
 
-    with run_configs.get().start(want_rgb=False) as controller:
-      with stopwatch.sw("first"):
-        controller.ping()
+            for _ in range(count):
+                controller.ping()
 
-      for _ in range(count):
-        controller.ping()
-
-    self.assertEqual(stopwatch.sw["ping"].num, count)
+        self.assertEqual(stopwatch.sw["ping"].num, count)
 
 
 if __name__ == "__main__":
-  absltest.main()
+    absltest.main()

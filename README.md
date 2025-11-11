@@ -23,12 +23,10 @@
 
 [basedpysc2](https://github.com/KotlinIsland/basedpysc2) is a fork of [DeepMind](http://deepmind.com)'s
 Python component of the StarCraft II Learning Environment (SC2LE) [PySC2](https://github.com/deepmind/pysc2). It exposes
-[Blizzard Entertainment](http://blizzard.com)'s [StarCraft II Machine Learning
-API](https://github.com/Blizzard/s2client-proto) as a Python RL Environment.
+[Blizzard Entertainment](http://blizzard.com)'s [StarCraft II Machine Learning API](https://github.com/Blizzard/s2client-proto) as a Python RL Environment.
 This is a collaboration between DeepMind and Blizzard to develop StarCraft II
 into a rich environment for RL research. PySC2 provides an interface for RL
 agents to interact with StarCraft 2, getting observations and sending actions.
-
 
 We have published an accompanying
 [blogpost](https://deepmind.com/blog/deepmind-and-blizzard-open-starcraft-ii-ai-research-environment/)
@@ -44,7 +42,6 @@ If you use the StarCraft II Machine Learning API and/or PySC2 in your research,
 please cite the [StarCraft II Paper](https://arxiv.org/abs/1708.04782)
 
 You can reach us at [pysc2@deepmind.com](mailto:pysc2@deepmind.com).
-
 
 # Quick Start Guide
 
