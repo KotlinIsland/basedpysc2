@@ -1,4 +1,3 @@
-load("//src/pysc2:build_defs.bzl", "pytype_strict_library")
 load("@pybind11_bazel//:build_defs.bzl", "pybind_extension")
 
 package(default_visibility = ["//visibility:public"])
@@ -24,7 +23,7 @@ py_test(
     ],
 )
 
-pytype_strict_library(
+py_library(
     name = "__init__",
     srcs = ["__init__.py"],
 )

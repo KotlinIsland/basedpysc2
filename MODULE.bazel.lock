@@ -228,7 +228,7 @@
   "moduleExtensions": {
     "//bazel:extensions.bzl%load_external_repos": {
       "general": {
-        "bzlTransitiveDigest": "ZhLn8R76FXkvnH/Vrs5D0F/K3HhgsGKwXoAdF/zoIYY=",
+        "bzlTransitiveDigest": "syVXwyvlvE8v1p3lPrKF5kIc5c3/dDpkTZgr7euIgTU=",
         "usagesDigest": "kBOheYgcg99uQONuJqzfnDfqQvD/43iRyuJvLbLycDQ=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},

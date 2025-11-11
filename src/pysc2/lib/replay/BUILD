@@ -1,5 +1,4 @@
 load("@my_deps//:requirements.bzl", "requirement")
-load("//src/pysc2:build_defs.bzl", "pytype_strict_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -15,7 +14,7 @@ exports_files([
     for i in range(1, 10)
 ])
 
-pytype_strict_library(
+py_library(
     name = "replay_converter",
     srcs = ["replay_converter.py"],
     srcs_version = "PY3",
@@ -32,7 +31,7 @@ pytype_strict_library(
     ],
 )
 
-pytype_strict_library(
+py_library(
     name = "replay_observation_stream",
     srcs = ["replay_observation_stream.py"],
     srcs_version = "PY3",
@@ -44,7 +43,7 @@ pytype_strict_library(
     ],
 )
 
-pytype_strict_library(
+py_library(
     name = "sc2_replay",
     srcs = ["sc2_replay.py"],
     srcs_version = "PY3",
@@ -71,7 +70,7 @@ py_test(
     ],
 )
 
-pytype_strict_library(
+py_library(
     name = "sc2_replay_utils",
     srcs = ["sc2_replay_utils.py"],
     srcs_version = "PY3",

@@ -1,5 +1,4 @@
 load("@my_deps//:requirements.bzl", "requirement")
-load("//src/pysc2:build_defs.bzl", "pytype_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -17,7 +16,7 @@ py_library(
     ],
 )
 
-pytype_library(
+py_library(
     name = "colors",
     srcs = ["colors.py"],
     srcs_version = "PY3",
@@ -27,7 +26,7 @@ pytype_library(
     ],
 )
 
-pytype_library(
+py_library(
     name = "named_array",
     srcs = ["named_array.py"],
     srcs_version = "PY3",
@@ -36,7 +35,7 @@ pytype_library(
     ],
 )
 
-pytype_library(
+py_library(
     name = "point_flag",
     srcs = ["point_flag.py"],
     srcs_version = "PY3",
@@ -61,7 +60,7 @@ py_test(
     ],
 )
 
-pytype_library(
+py_library(
     name = "features",
     srcs = ["features.py"],
     srcs_version = "PY3",
@@ -98,12 +97,12 @@ py_test(
     ],
 )
 
-pytype_library(
+py_library(
     name = "gfile",
     srcs = ["gfile.py"],
 )
 
-pytype_library(
+py_library(
     name = "image_differencer",
     srcs = ["image_differencer.py"],
     srcs_version = "PY3",
@@ -130,13 +129,13 @@ py_test(
     ],
 )
 
-pytype_library(
+py_library(
     name = "metrics",
     srcs = ["metrics.py"],
     srcs_version = "PY3",
 )
 
-pytype_library(
+py_library(
     name = "protocol",
     srcs = ["protocol.py"],
     srcs_version = "PY3",
@@ -149,13 +148,13 @@ pytype_library(
     ],
 )
 
-pytype_library(
+py_library(
     name = "memoize",
     srcs = ["memoize.py"],
     srcs_version = "PY3",
 )
 
-pytype_library(
+py_library(
     name = "np_util",
     srcs = ["np_util.py"],
     srcs_version = "PY3",
@@ -178,7 +177,7 @@ py_test(
     ],
 )
 
-pytype_library(
+py_library(
     name = "portspicker",
     srcs = ["portspicker.py"],
     srcs_version = "PY3",
@@ -201,7 +200,7 @@ py_test(
     ],
 )
 
-pytype_library(
+py_library(
     name = "proto_diff",
     srcs = ["proto_diff.py"],
     srcs_version = "PY3",
@@ -222,7 +221,7 @@ py_test(
     ],
 )
 
-pytype_library(
+py_library(
     name = "remote_controller",
     srcs = ["remote_controller.py"],
     srcs_version = "PY3",
@@ -238,7 +237,7 @@ pytype_library(
     ],
 )
 
-pytype_library(
+py_library(
     name = "renderer_human",
     srcs = ["renderer_human.py"],
     srcs_version = "PY3",
@@ -263,7 +262,7 @@ pytype_library(
     ],
 )
 
-pytype_library(
+py_library(
     name = "replay",
     srcs = ["replay.py"],
     srcs_version = "PY3",
@@ -273,12 +272,12 @@ pytype_library(
     ],
 )
 
-pytype_library(
+py_library(
     name = "resources",
     srcs = ["resources.py"],
 )
 
-pytype_library(
+py_library(
     name = "run_parallel",
     srcs = ["run_parallel.py"],
     srcs_version = "PY3",
@@ -297,7 +296,7 @@ py_test(
     ],
 )
 
-pytype_library(
+py_library(
     name = "sc_process",
     srcs = ["sc_process.py"],
     srcs_version = "PY3",
@@ -310,13 +309,13 @@ pytype_library(
     ],
 )
 
-pytype_library(
+py_library(
     name = "static_data",
     srcs = ["static_data.py"],
     srcs_version = "PY3",
 )
 
-pytype_library(
+py_library(
     name = "point",
     srcs = ["point.py"],
     srcs_version = "PY3",
@@ -334,7 +333,7 @@ py_test(
     ],
 )
 
-pytype_library(
+py_library(
     name = "stopwatch",
     srcs = ["stopwatch.py"],
     srcs_version = "PY3",
@@ -353,32 +352,32 @@ py_test(
     ],
 )
 
-pytype_library(
+py_library(
     name = "transform",
     srcs = ["transform.py"],
     srcs_version = "PY3",
     deps = [":point"],
 )
 
-pytype_library(
+py_library(
     name = "buffs",
     srcs = ["buffs.py"],
     srcs_version = "PY3",
 )
 
-pytype_library(
+py_library(
     name = "upgrades",
     srcs = ["upgrades.py"],
     srcs_version = "PY3",
 )
 
-pytype_library(
+py_library(
     name = "units",
     srcs = ["units.py"],
     srcs_version = "PY3",
 )
 
-pytype_library(
+py_library(
     name = "renderer_ascii",
     srcs = ["renderer_ascii.py"],
     srcs_version = "PY3",
@@ -387,7 +386,7 @@ pytype_library(
     ],
 )
 
-pytype_library(
+py_library(
     name = "video_writer",
     srcs = ["video_writer.py"],
     srcs_version = "PY3",

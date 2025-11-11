@@ -17,6 +17,8 @@ bazel_dep(name = "googletest", version = "1.15.2", repo_name = "com_google_googl
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(
     python_version = "3.13",
+    is_default = True,
+    ignore_root_user_error = True,
 )
 
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")

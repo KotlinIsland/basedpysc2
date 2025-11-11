@@ -1,5 +1,4 @@
 load("@my_deps//:requirements.bzl", "requirement")
-load("//src/pysc2:build_defs.bzl", "pytype_library", "pytype_strict_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -15,7 +14,7 @@ py_library(
     ],
 )
 
-pytype_library(
+py_library(
     name = "base_agent",
     srcs = ["base_agent.py"],
     srcs_version = "PY3",
@@ -24,7 +23,7 @@ pytype_library(
     ],
 )
 
-pytype_strict_library(
+py_library(
     name = "no_op_agent",
     srcs = ["no_op_agent.py"],
     deps = [
@@ -33,7 +32,7 @@ pytype_strict_library(
     ],
 )
 
-pytype_library(
+py_library(
     name = "scripted_agent",
     srcs = ["scripted_agent.py"],
     srcs_version = "PY3",
@@ -45,7 +44,7 @@ pytype_library(
     ],
 )
 
-pytype_library(
+py_library(
     name = "random_agent",
     srcs = ["random_agent.py"],
     srcs_version = "PY3",

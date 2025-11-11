@@ -1,11 +1,10 @@
 load("@my_deps//:requirements.bzl", "requirement")
-load("//src/pysc2:build_defs.bzl", "pytype_binary", "pytype_strict_binary")
 
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])
 
-pytype_binary(
+py_binary(
     name = "replay_actions",
     srcs = ["replay_actions.py"],
     python_version = "PY3",
@@ -26,7 +25,7 @@ pytype_binary(
     ],
 )
 
-pytype_binary(
+py_binary(
     name = "gen_actions",
     srcs = ["gen_actions.py"],
     python_version = "PY3",
@@ -41,7 +40,7 @@ pytype_binary(
     ],
 )
 
-pytype_binary(
+py_binary(
     name = "gen_data",
     srcs = ["gen_data.py"],
     python_version = "PY3",
@@ -55,7 +54,7 @@ pytype_binary(
     ],
 )
 
-pytype_binary(
+py_binary(
     name = "check_apm",
     srcs = ["check_apm.py"],
     python_version = "PY3",
@@ -72,7 +71,7 @@ pytype_binary(
     ],
 )
 
-pytype_binary(
+py_binary(
     name = "benchmark_observe",
     srcs = ["benchmark_observe.py"],
     python_version = "PY3",
@@ -88,7 +87,7 @@ pytype_binary(
     ],
 )
 
-pytype_binary(
+py_binary(
     name = "benchmark_replay",
     srcs = ["benchmark_replay.py"],
     python_version = "PY3",
@@ -106,7 +105,7 @@ pytype_binary(
     ],
 )
 
-pytype_binary(
+py_binary(
     name = "mem_leak_check",
     srcs = ["mem_leak_check.py"],
     python_version = "PY3",
@@ -122,7 +121,7 @@ pytype_binary(
     ],
 )
 
-pytype_binary(
+py_binary(
     name = "gen_versions",
     srcs = ["gen_versions.py"],
     python_version = "PY3",
@@ -133,7 +132,7 @@ pytype_binary(
     ],
 )
 
-pytype_binary(
+py_binary(
     name = "map_list",
     srcs = ["map_list.py"],
     python_version = "PY3",
@@ -144,7 +143,7 @@ pytype_binary(
     ],
 )
 
-pytype_binary(
+py_binary(
     name = "play",
     srcs = ["play.py"],
     python_version = "PY3",
@@ -163,7 +162,7 @@ pytype_binary(
     ],
 )
 
-pytype_binary(
+py_binary(
     name = "play_vs_agent",
     srcs = ["play_vs_agent.py"],
     python_version = "PY3",
@@ -185,7 +184,7 @@ pytype_binary(
     ],
 )
 
-pytype_binary(
+py_binary(
     name = "agent_remote",
     srcs = ["agent_remote.py"],
     python_version = "PY3",
@@ -207,7 +206,7 @@ pytype_binary(
     ],
 )
 
-pytype_binary(
+py_binary(
     name = "replay_info",
     srcs = ["replay_info.py"],
     python_version = "PY3",
@@ -224,7 +223,7 @@ pytype_binary(
     ],
 )
 
-pytype_binary(
+py_binary(
     name = "agent",
     srcs = ["agent.py"],
     python_version = "PY3",
@@ -242,7 +241,7 @@ pytype_binary(
     ],
 )
 
-pytype_binary(
+py_binary(
     name = "valid_actions",
     srcs = ["valid_actions.py"],
     python_version = "PY3",
@@ -256,7 +255,7 @@ pytype_binary(
     ],
 )
 
-pytype_binary(
+py_binary(
     name = "compare_binaries",
     srcs = ["compare_binaries.py"],
     python_version = "PY3",
@@ -274,7 +273,7 @@ pytype_binary(
     ],
 )
 
-pytype_strict_binary(
+py_binary(
     name = "battle_net_maps",
     srcs = ["battle_net_maps.py"],
     python_version = "PY3",
@@ -285,7 +284,7 @@ pytype_strict_binary(
     ],
 )
 
-pytype_strict_binary(
+py_binary(
     name = "reencode_replays",
     srcs = ["reencode_replays.py"],
     python_version = "PY3",
@@ -299,7 +298,7 @@ pytype_strict_binary(
     ],
 )
 
-pytype_strict_binary(
+py_binary(
     name = "update_battle_net_cache",
     srcs = ["update_battle_net_cache.py"],
     python_version = "PY3",
@@ -313,7 +312,7 @@ pytype_strict_binary(
     ],
 )
 
-pytype_strict_binary(
+py_binary(
     name = "replay_version",
     srcs = ["replay_version.py"],
     deps = [

@@ -31,13 +31,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
       - name: Setup environment
         uses: ./.github/actions/setup-environment
         with:
           python-version: ${{ matrix.python-version }}
+          dev: true
 
       - run: uv run basedpyright
       - run: uv run ruff format --check

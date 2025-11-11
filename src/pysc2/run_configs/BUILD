@@ -1,10 +1,9 @@
-load("//src/pysc2:build_defs.bzl", "pytype_library")
 
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])
 
-pytype_library(
+py_library(
     name = "run_configs",
     srcs = ["__init__.py"],
     srcs_version = "PY3",
@@ -16,7 +15,7 @@ pytype_library(
     ],
 )
 
-pytype_library(
+py_library(
     name = "lib",
     srcs = ["lib.py"],
     srcs_version = "PY3",
@@ -25,7 +24,7 @@ pytype_library(
     ],
 )
 
-pytype_library(
+py_library(
     name = "platforms",
     srcs = ["platforms.py"],
     deps = [

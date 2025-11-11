@@ -9,9 +9,22 @@ inputs:
     description: "Path to a .python-version file"
     required: false
     default: ""
+  dev:
+    description: "Whether to install dev dependencies"
+    required: false
+    default: "false"
 runs:
   using: "composite"
   steps:
+    - name: Install protoc
+      shell: bash
+      run: |
+        if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+          sudo apt-get update && sudo apt-get install -y protobuf-compiler
+        elif [[ "$OSTYPE" == "darwin"* ]]; then
+          brew install protobuf
+        fi
+
     - name: Set up Python from file
       uses: actions/setup-python@v5
       with:
@@ -26,4 +39,9 @@ runs:
 
     - name: Install the project
       shell: bash
-      run: uv sync --locked --all-extras --dev
+      run: |
+        if [[ "${{ inputs.dev }}" == "true" ]]; then
+          uv sync --locked --all-extras --dev
+        else
+          uv sync --locked --all-extras
+        fi

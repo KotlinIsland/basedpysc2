@@ -1,4 +1,3 @@
-load("//src/pysc2:build_defs.bzl", "pytype_strict_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -25,7 +24,7 @@ filegroup(
     ]),
 )
 
-pytype_strict_library(
+py_library(
     name = "__init__",
     srcs = ["__init__.py"],
 )

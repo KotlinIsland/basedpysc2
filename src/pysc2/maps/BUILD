@@ -1,4 +1,3 @@
-load("//src/pysc2:build_defs.bzl", "pytype_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -11,7 +10,7 @@ filegroup(
     ]),
 )
 
-pytype_library(
+py_library(
     name = "maps",
     srcs = [
         "__init__.py",
