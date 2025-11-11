@@ -1,0 +1,59 @@
+name: CI
+on:
+  pull_request:
+
+jobs:
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download actionlint
+        id: get_actionlint
+        run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash) 1.7.8
+        shell: bash
+      - name: Check workflow files
+        run: ${{ steps.get_actionlint.outputs.executable }} -color
+        shell: bash
+
+  build-test-lint:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version:
+          # - "3.10"
+          # - "3.11"
+          # - "3.12"
+          - "3.13"
+          # - "3.14" missing wheels for some dep
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-environment
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - run: uv run basedpyright
+      - run: uv run ruff format --check
+      - run: uv run ruff check --output-format=github
+      - run: uv run dprint check
+
+      - run: uv run pytest tests
+
+      - uses: bazelbuild/setup-bazelisk@v3
+      - name: Mount bazel cache
+        uses: actions/cache@v4
+        with:
+          path: "~/.cache/bazel"
+          key: bazel-${{ runner.os }}-${{ hashFiles('**/BUILD', 'MODULE.bazel') }}
+      # until we use bazels uv plugin we will only test the c++ parts
+      # - run: bazel test //...
+
+      # only test the c++ parts
+      - run: bazel test //src/pysc2/env/converter/cc/...

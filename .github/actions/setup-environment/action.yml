@@ -1,0 +1,29 @@
+name: "Setup uv (centralized version) + checkout + Python"
+description: "Checkout repo, set up Python, and install uv using the version pinned in .github/uv-version.txt"
+inputs:
+  python-version:
+    description: "Python version to set up (e.g., 3.12)"
+    required: false
+    default: ""
+  python-version-file:
+    description: "Path to a .python-version file"
+    required: false
+    default: ""
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python from file
+      uses: actions/setup-python@v5
+      with:
+        python-version-file: ${{ inputs.python-version-file }}
+        python-version: ${{ inputs.python-version }}
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
+      with:
+        version: 0.9.8
+        enable-cache: true
+
+    - name: Install the project
+      shell: bash
+      run: uv sync --locked --all-extras --dev
