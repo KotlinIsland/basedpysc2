@@ -41,7 +41,7 @@ runs:
       shell: bash
       run: |
         if [[ "${{ inputs.dev }}" == "true" ]]; then
-          uv sync --locked --all-extras --dev
+          uv sync --locked  # TODO --dev
         else
-          uv sync --locked --all-extras
+          uv sync --locked
         fi
