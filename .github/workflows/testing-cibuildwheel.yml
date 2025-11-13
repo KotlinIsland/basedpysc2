@@ -23,7 +23,7 @@ jobs:
           python-version-file: ".python-version"
 
       - name: Install cibuildwheel
-        run: uv sync --group wheelhouse
+        run: uv sync --group wheelhouse --no-dev
 
       - name: Set up QEMU for ARM emulation (Linux only)
         if: runner.os == 'Linux'
@@ -37,7 +37,7 @@ jobs:
           if [[ "${{ matrix.os }}" == *"26"* ]]; then
             echo "MACOSX_DEPLOYMENT_TARGET=26.0" >> $GITHUB_ENV
           else
-            echo "MACOSX_DEPLOYMENT_TARGET=15.0" >> $GITHUB_ENV
+            echo "MACOSX_DEPLOYMENT_TARGET=15.5" >> $GITHUB_ENV
           fi
 
       - name: Build wheels

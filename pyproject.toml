@@ -68,6 +68,7 @@ build-frontend = "build[uv]"
 
 [tool.cibuildwheel.linux]
 before-all = """
+yum install -y java-11-openjdk-devel zip unzip which &&
 if [ "$(uname -m)" = "x86_64" ]; then
   ARCH="amd64";
 elif [ "$(uname -m)" = "aarch64" ]; then
