@@ -40,8 +40,9 @@ runs:
     - name: Install the project
       shell: bash
       run: |
+        echo "Installing syncing uv..."
         if [[ "${{ inputs.dev }}" == "true" ]]; then
-          uv sync --locked  # TODO --dev
+          uv sync --locked --dev
         else
-          uv sync --locked
+          uv sync --locked --no-dev
         fi
