@@ -10,19 +10,28 @@ class BuildWithBazel(_build_py):
 
     def run(self):
         """Build the C++ extension with Bazel, then run normal build."""
+
+        # TODO: need to handle .pyd for windows
+
+        cc_dir = Path("src/pysc2/env/converter/cc/python")
+        cc_dir.mkdir(parents=True, exist_ok=True)
+        game_data_dir = Path("src/pysc2/env/converter/cc/game_data/python")
+        game_data_dir.mkdir(parents=True, exist_ok=True)
+
         # Build with Bazel
-        subprocess.check_call(["bazel", "build", "//src/pysc2/env/converter/cc/python:converter"])
+        subprocess.check_call(["bazel", "build", f"//{cc_dir}:converter"])
+        subprocess.check_call(["bazel", "build", f"//{game_data_dir}:converter"])
 
-        # Copy the .so file
-        so_dir = Path("src/pysc2/env/converter/cc/python")
-        so_dir.mkdir(parents=True, exist_ok=True)
-
+        # Copy the .so files
         subprocess.check_call(
-            "cp -f bazel-bin/src/pysc2/env/converter/cc/python/converter*.so src/pysc2/env/converter/cc/python/",
+            f"cp -f bazel-bin/{game_data_dir}/uint8_lookup.so {game_data_dir}/",
+            shell=True,
+        )
+        subprocess.check_call(
+            f"cp -f bazel-bin/{cc_dir}/converter.so {cc_dir}/",
             shell=True,
         )
 
-        # Run normal build
         super().run()
 
 
@@ -30,6 +39,7 @@ setup(
     cmdclass={"build_py": BuildWithBazel},
     package_data={
         "pysc2.env.converter.cc.python": ["*.so"],
+        "pysc2.env.converter.cc.game_data.python": ["*.so"],
     },
     has_ext_modules=lambda: True,  # Mark as platform-specific
 )
