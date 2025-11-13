@@ -89,7 +89,6 @@ sudo curl -fsSL https://github.com/bazelbuild/bazelisk/releases/download/v1.27.0
 sudo chmod +x /usr/local/bin/bazel &&
 bazel --version
 """
-environment = { MACOSX_DEPLOYMENT_TARGET = "15.0" }
 
 [tool.basedpyright]
 

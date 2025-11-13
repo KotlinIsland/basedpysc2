@@ -31,6 +31,15 @@ jobs:
         with:
           platforms: arm64
 
+      - name: Set macOS deployment target
+        if: runner.os == 'macOS'
+        run: |
+          if [[ "${{ matrix.os }}" == *"26"* ]]; then
+            echo "MACOSX_DEPLOYMENT_TARGET=26.0" >> $GITHUB_ENV
+          else
+            echo "MACOSX_DEPLOYMENT_TARGET=15.0" >> $GITHUB_ENV
+          fi
+
       - name: Build wheels
         run: uv run cibuildwheel --output-dir wheelhouse
 
