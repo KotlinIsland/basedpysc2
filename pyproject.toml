@@ -63,6 +63,7 @@ wheelhouse = [
 
 [tool.cibuildwheel]
 build = "cp313-*"
+skip = "*-musllinux*"
 build-verbosity = 1
 build-frontend = "build[uv]"
 
