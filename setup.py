@@ -19,8 +19,7 @@ class BuildWithBazel(_build_py):
         game_data_dir.mkdir(parents=True, exist_ok=True)
 
         # Build with Bazel
-        subprocess.check_call(["bazel", "build", f"//{cc_dir}:converter"])
-        subprocess.check_call(["bazel", "build", f"//{game_data_dir}:converter"])
+        subprocess.check_call(["bazel", "build", f"//{cc_dir}:converter", f"//{game_data_dir}:uint8_lookup"])
 
         # Copy the .so files
         subprocess.check_call(

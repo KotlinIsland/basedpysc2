@@ -61,9 +61,6 @@ wheelhouse = [
   "cibuildwheel>=3.2.1",
 ]
 
-[tool.uv.sources]
-s2clientprotocol = { git = "https://github.com/Blizzard/s2client-proto" }
-
 [tool.cibuildwheel]
 build = "cp313-*"
 build-verbosity = 1
