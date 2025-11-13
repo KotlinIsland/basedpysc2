@@ -1,7 +1,7 @@
 """Setup script for pysc2 - builds using Bazel, then packages."""
 import subprocess
 from pathlib import Path
-from setuptools import setup
+from setuptools import setup, find_packages
 from setuptools.command.build_py import build_py as _build_py
 
 
@@ -35,6 +35,8 @@ class BuildWithBazel(_build_py):
 
 
 setup(
+    packages=find_packages(where="src"),
+    package_dir={"": "src"},
     cmdclass={"build_py": BuildWithBazel},
     package_data={
         "pysc2.env.converter.cc.python": ["*.so"],

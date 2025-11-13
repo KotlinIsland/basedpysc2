@@ -200,3 +200,9 @@ force-single-line = true
 [tool.pytest.ini_options]
 xfail_strict = true
 addopts = ['--strict-markers']
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools]
+exclude-package-data = {"*" = ["BUILD", "BUILD.bazel"]}
