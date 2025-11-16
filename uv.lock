@@ -535,7 +535,7 @@ requires-dist = [
     { name = "dm-tree", specifier = ">=0.1.9" },
     { name = "enum34", specifier = ">=1.1.10" },
     { name = "mpyq", specifier = ">=0.2.5" },
-    { name = "numpy", specifier = ">=2.3.4" },
+    { name = "numpy", specifier = ">=2.2.0" },
     { name = "portpicker", specifier = ">=1.6.0" },
     { name = "protobuf", specifier = ">=6.33.0" },
     { name = "psutil", specifier = ">=7.1.3" },
