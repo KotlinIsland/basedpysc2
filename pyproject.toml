@@ -1,0 +1,218 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "basedpysc2"
+version = "5.0.0"
+description = "Starcraft II environment and library for training agents."
+readme = "README.md"
+requires-python = ">=3.13"
+license = "Apache-2.0"
+authors = [{ name = "KotlinIsland" }]
+keywords = ["StarCraft", "AI", "based"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: Science/Research",
+  "Operating System :: POSIX :: Linux",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: MacOS :: MacOS X",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+  "absl-py>=2.3.1",
+  "deepdiff>=8.6.1",
+  "dm-env>=1.6",
+  "dm-tree>=0.1.9",
+  "enum34>=1.1.10",
+  "mpyq>=0.2.5",
+  "numpy>=2.2.0",
+  "portpicker>=1.6.0",
+  "protobuf>=6.33.0",
+  "psutil>=7.1.3",
+  "pygame>=2.6.1",
+  "requests>=2.32.5",
+  "s2clientprotocol>=5.0.15.95299.0",
+  "s2protocol>=5.0.15.95299.0",
+  "sk-video>=1.1.10",
+  "typing-extensions>=4.15.0",
+  "websocket-client>=1.9.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/KotlinIsland/basedpysc2"
+
+[project.scripts]
+pysc2_agent = "pysc2.bin.agent:entry_point"
+pysc2_play = "pysc2.bin.play:entry_point"
+pysc2_replay_info = "pysc2.bin.replay_info:entry_point"
+
+[dependency-groups]
+dev = [
+  "basedpyright>=1.33.0",
+  "dprint-py>=0.50.2.0",
+  "mock>=5.2.0",
+  "pytest>=9.0.0",
+  "ruff>=0.14.4",
+]
+wheelhouse = [
+  "cibuildwheel>=3.2.1",
+]
+
+[tool.cibuildwheel]
+build = "cp313-*"
+skip = "*-musllinux*"
+build-verbosity = 1
+build-frontend = "build[uv]"
+
+[tool.cibuildwheel.linux]
+before-all = """
+if command -v apk > /dev/null; then
+  apk add --no-cache openjdk11 zip unzip bash;
+elif command -v yum > /dev/null; then
+  yum install -y java-11-openjdk-devel zip unzip which;
+fi &&
+if [ "$(uname -m)" = "x86_64" ]; then
+  ARCH="amd64";
+elif [ "$(uname -m)" = "aarch64" ]; then
+  ARCH="arm64";
+fi &&
+curl -fsSL https://github.com/bazelbuild/bazelisk/releases/download/v1.27.0/bazelisk-linux-${ARCH} -o /usr/local/bin/bazel &&
+chmod +x /usr/local/bin/bazel &&
+bazel --version
+"""
+
+[tool.cibuildwheel.macos]
+before-all = """
+if [ "$(uname -m)" = "x86_64" ]; then
+  ARCH="amd64";
+else
+  ARCH="arm64";
+fi &&
+sudo curl -fsSL https://github.com/bazelbuild/bazelisk/releases/download/v1.27.0/bazelisk-darwin-${ARCH} -o /usr/local/bin/bazel &&
+sudo chmod +x /usr/local/bin/bazel &&
+bazel --version
+"""
+
+[tool.basedpyright]
+
+[tool.ruff.lint]
+select = ["ALL"]
+
+ignore = [
+  "ANN204", # __init__ doesn't need a return type annotation
+  "COM812", # conflicts with ruff format
+  "D203", # conflicts with D211
+  "D213", # conflicts with D213
+
+  # don't like
+  "C901",
+  "PLR0911",
+  "PLR0912",
+  "PLR0913",
+  "PLR0915",
+
+  # gradual adoption
+  "D", # don't care about docs for now
+  "ANN", # don't care about type annotations for now
+
+  # temp gradual adoption
+  "UP",
+  "FBT",
+  "RET",
+  "RSE102",
+  "PTH",
+  "DTZ003",
+  "EM102",
+  "RUF012",
+  "EM101",
+  "TRY003",
+  "PLR2004",
+  "PYI024",
+  "B904",
+  "C408",
+  "ERA001",
+  "F821",
+  "PT018",
+  "S101",
+  "T201",
+  "N802",
+  "PT009",
+  "E741",
+  "SIM117",
+  "B905",
+  "EXE001",
+  "RUF023",
+  "PLR1730",
+  "S603",
+  "RUF005",
+  "S108",
+  "PT027",
+  "C401",
+  "EM103",
+  "SIM102",
+  "PERF401",
+  "Q000",
+  "TRY002",
+  "E731",
+  "PLR5501",
+  "RUF021",
+  "FIX002",
+  "TD003",
+  "E722",
+  "S607",
+  "SLOT002",
+  "RUF015",
+  "PIE790",
+  "A001",
+  "SIM108",
+  "TRY004",
+  "S311",
+  "RUF046",
+  "S301",
+  "B018",
+  "PLW2901",
+  "SLF001",
+  "NPY002",
+  "ICN001",
+  "N806",
+  "SIM300",
+  "PLW1641",
+  "RUF007",
+  "PLR1716",
+  "ARG002",
+  "S324",
+  "B027",
+  "PIE810",
+  "BLE001",
+  "COM819",
+  "ARG001",
+  "S310",
+  "FLY002",
+  "ARG005",
+  "SIM110",
+  "SIM105",
+  "S113",
+  "B007",
+  "C413",
+  "C414",
+]
+
+[tool.ruff.lint.isort]
+force-single-line = true
+
+[tool.pytest.ini_options]
+xfail_strict = true
+addopts = ['--strict-markers']
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.uv.sources]
+s2clientprotocol = { git = "https://github.com/KotlinIsland/s2client-proto" }
+
+[tool.setuptools]
+exclude-package-data = {"*" = ["BUILD", "BUILD.bazel"]}

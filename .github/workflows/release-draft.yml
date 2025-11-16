@@ -1,0 +1,78 @@
+name: Draft Release (build + version bump)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: draft-release-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-draft:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-environment
+        with:
+          python-version-file: ".python-version"
+
+      - name: Configure Git user
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version (pre-release)
+        id: bump
+        run: |
+          # Bump prerelease (alpha) version
+          CURRENT=$(uv version --short)
+          echo "Current: $CURRENT"
+          uv version --bump
+          NEW=$(uv version)
+          echo "new_version=$NEW" >> $GITHUB_OUTPUT
+          git commit -am "bump version to ${NEW}" || echo "No changes to commit"
+          # Create a tag for the version if not exists
+          if ! git rev-parse -q --verify "refs/tags/v${NEW}" > /dev/null; then
+            git tag -a "v${NEW}" -m "Release v${NEW} (draft)"
+            git push --follow-tags origin HEAD:${GITHUB_REF#refs/heads/}
+          else
+            git push origin HEAD:${GITHUB_REF#refs/heads/}
+          fi
+
+      - name: Build distributions
+        run: uv build
+
+      - uses: bazelbuild/setup-bazelisk@v3
+      - name: Mount bazel cache
+        uses: actions/cache@v4
+        with:
+          path: "~/.cache/bazel"
+          key: bazel
+      - run: bazel build --nobuild //...
+
+      - name: Upload build artifacts (workflow)
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ steps.bump.outputs.new_version }}
+          path: dist/*
+
+      - name: Create or update draft release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.bump.outputs.new_version }}
+          name: v${{ steps.bump.outputs.new_version }} (draft)
+          draft: true
+          prerelease: true # TODO
+          files: dist/*
